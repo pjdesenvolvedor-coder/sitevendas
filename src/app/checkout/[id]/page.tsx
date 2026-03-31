@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ShieldCheck, ArrowLeft, Loader2, QrCode, User, Phone } from "lucide-react";
-import Link from "link";
+import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 
 export default function CheckoutPage({ params }: { params: Promise<{ id: string }> }) {
