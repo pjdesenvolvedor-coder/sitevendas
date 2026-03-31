@@ -198,7 +198,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
                     <div className="flex justify-between items-center gap-4">
                       <div className="flex-1 min-w-0">
                         <h2 className="font-headline text-xl text-white truncate">{product.name}</h2>
-                        <p className="text-[10px] text-primary font-bold uppercase tracking-[0.2em]">Entrega Imediata • Assinatura Mensal</p>
+                        <p className="text-[10px] text-primary font-bold uppercase tracking-[0.2em]">Entrega Imediata</p>
                       </div>
                       <div className="flex items-center gap-4 shrink-0">
                         <div className="text-right">
@@ -456,7 +456,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
                 <div className="mt-8 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl flex items-start gap-3 text-left">
                   <AlertTriangle className="w-5 h-5 text-yellow-500 shrink-0" />
                   <p className="text-[10px] text-yellow-500/90 font-bold uppercase leading-relaxed">
-                    Te enviamos também o acesso pelo zap se precisar de suporte contate por lá!
+                    te enviamos também o acesso pelo zap se precisar de suporte contate por lá!
                   </p>
                 </div>
 
