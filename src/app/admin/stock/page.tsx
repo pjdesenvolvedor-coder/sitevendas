@@ -75,7 +75,7 @@ export default function AdminStockPage() {
   };
 
   const totalInventory = products.reduce((acc, p) => acc + (p.credentials?.filter(c => !c.sold).length || 0), 0);
-  const lowStockCount = products.filter(p => (p.credentials?.filter(c => !c.sold).length || 0) < 5).length;
+  const lowStockCount = products.filter(p => (p.credentials?.filter(c => !c.sold).length || 0) < 2).length;
 
   return (
     <div className="space-y-8">
@@ -103,7 +103,7 @@ export default function AdminStockPage() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-yellow-500">{lowStockCount} plataformas</div>
-            <p className="text-[10px] text-muted-foreground uppercase mt-1">Menos de 5 unidades restantes</p>
+            <p className="text-[10px] text-muted-foreground uppercase mt-1">Menos de 2 telas restantes</p>
           </CardContent>
         </Card>
       </div>
@@ -125,7 +125,7 @@ export default function AdminStockPage() {
                     </div>
                     <div>
                       <h3 className="font-bold text-lg">{product.name}</h3>
-                      <Badge variant={unsoldCredentials.length < 5 ? "destructive" : "outline"} className="text-[10px] uppercase">
+                      <Badge variant={unsoldCredentials.length < 2 ? "destructive" : "outline"} className="text-[10px] uppercase">
                         {unsoldCredentials.length} disponíveis
                       </Badge>
                     </div>
