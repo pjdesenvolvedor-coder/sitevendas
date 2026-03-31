@@ -1,21 +1,26 @@
 
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   TrendingUp, 
-  Users, 
   PackageCheck, 
   AlertTriangle,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  Users
 } from "lucide-react";
-import { INITIAL_ORDERS, INITIAL_PRODUCTS } from "@/lib/mock-data";
+import { useProducts } from "@/context/products-context";
+import { INITIAL_ORDERS } from "@/lib/mock-data";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 export default function AdminDashboard() {
+  const { products } = useProducts();
   const totalRevenue = INITIAL_ORDERS.reduce((acc, order) => acc + order.total, 0);
   const totalSales = INITIAL_ORDERS.length;
-  const activeProducts = INITIAL_PRODUCTS.length;
-  const lowStock = INITIAL_PRODUCTS.filter(p => p.stock < 10).length;
+  const activeProductsCount = products.filter(p => p.active).length;
+  const lowStock = products.filter(p => p.stock < 10).length;
 
   return (
     <div className="space-y-8">
@@ -28,7 +33,7 @@ export default function AdminDashboard() {
         {[
           { label: "Receita Total", value: `R$ ${totalRevenue.toFixed(2)}`, icon: TrendingUp, color: "text-green-500", change: "+12%", up: true },
           { label: "Vendas Totais", value: totalSales, icon: PackageCheck, color: "text-blue-500", change: "+5%", up: true },
-          { label: "Produtos Ativos", value: activeProducts, icon: Users, color: "text-primary", change: "0%", up: true },
+          { label: "Produtos Ativos", value: activeProductsCount, icon: Users, color: "text-primary", change: "0%", up: true },
           { label: "Estoque Baixo", value: lowStock, icon: AlertTriangle, color: "text-yellow-500", change: "-2", up: false },
         ].map((stat, i) => (
           <Card key={i} className="bg-card/50 border-border">
@@ -79,7 +84,7 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
              <div className="space-y-4">
-              {INITIAL_PRODUCTS.map((product) => (
+              {products.map((product) => (
                 <div key={product.id} className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="font-bold">{product.name}</span>
@@ -102,5 +107,3 @@ export default function AdminDashboard() {
     </div>
   );
 }
-
-import { cn } from "@/lib/utils";

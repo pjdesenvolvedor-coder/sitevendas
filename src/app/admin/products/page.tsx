@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { INITIAL_PRODUCTS } from "@/lib/mock-data";
+import { useProducts } from "@/context/products-context";
 import { Button } from "@/components/ui/button";
 import { Plus, Search, Edit3, Trash2, Wand2, Loader2, AlertCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -41,13 +41,12 @@ import { useToast } from "@/hooks/use-toast";
 import { StreamingService } from "@/lib/types";
 
 export default function AdminProductsPage() {
-  const [products, setProducts] = useState<StreamingService[]>(INITIAL_PRODUCTS);
+  const { products, addProduct, deleteProduct } = useProducts();
   const [isAdding, setIsAdding] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [productToDelete, setProductToDelete] = useState<StreamingService | null>(null);
   const { toast } = useToast();
 
-  // Form states
   const [formData, setFormData] = useState({
     name: "",
     price: "",
@@ -91,12 +90,12 @@ export default function AdminProductsPage() {
       price: parseFloat(formData.price),
       description: formData.description,
       stock: parseInt(formData.stock),
-      features: ["Acesso imediato", "Suporte 24h"], // Default features
-      logoId: "netflix", // Default logo
+      features: ["Acesso imediato", "Suporte 24h"],
+      logoId: "netflix",
       active: true,
     };
 
-    setProducts([newProduct, ...products]);
+    addProduct(newProduct);
     toast({ title: "Produto Salvo", description: `${formData.name} foi adicionado com sucesso.` });
     setIsAdding(false);
     setFormData({ name: "", price: "", description: "", stock: "" });
@@ -108,7 +107,7 @@ export default function AdminProductsPage() {
 
   const handleDelete = () => {
     if (productToDelete) {
-      setProducts(products.filter(p => p.id !== productToDelete.id));
+      deleteProduct(productToDelete.id);
       toast({ 
         title: "Produto Excluído", 
         description: `${productToDelete.name} foi removido do catálogo.`,
@@ -206,13 +205,6 @@ export default function AdminProductsPage() {
 
       <Card className="bg-card/50 border-border rounded-3xl overflow-hidden">
         <CardContent className="p-0">
-          <div className="p-6 border-b border-border flex items-center gap-4 bg-muted/20">
-            <Search className="w-5 h-5 text-muted-foreground" />
-            <Input 
-              placeholder="Buscar produtos..." 
-              className="border-none bg-transparent shadow-none focus-visible:ring-0 max-w-sm font-medium"
-            />
-          </div>
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent border-border bg-muted/10">
@@ -240,9 +232,6 @@ export default function AdminProductsPage() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Button variant="ghost" size="icon" className="h-10 w-10 hover:text-primary rounded-xl hover:bg-primary/5">
-                        <Edit3 className="w-4 h-4" />
-                      </Button>
                       <Button 
                         variant="ghost" 
                         size="icon" 
@@ -260,7 +249,6 @@ export default function AdminProductsPage() {
         </CardContent>
       </Card>
 
-      {/* Alerta de Confirmação de Exclusão */}
       <AlertDialog open={!!productToDelete} onOpenChange={(open) => !open && setProductToDelete(null)}>
         <AlertDialogContent className="bg-card border-border rounded-[2rem]">
           <AlertDialogHeader>

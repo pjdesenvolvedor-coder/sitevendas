@@ -2,21 +2,22 @@
 "use client";
 
 import { use, useState } from "react";
-import { INITIAL_PRODUCTS } from "@/lib/mock-data";
+import { useProducts } from "@/context/products-context";
 import { Navbar } from "@/components/navbar";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { ShieldCheck, ArrowLeft, Loader2, CreditCard, Banknote, QrCode } from "lucide-react";
+import { ShieldCheck, ArrowLeft, Loader2, CreditCard, QrCode } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 export default function CheckoutPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
-  const product = INITIAL_PRODUCTS.find(p => p.id === resolvedParams.id);
+  const { products } = useProducts();
+  const product = products.find(p => p.id === resolvedParams.id);
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
@@ -52,7 +53,6 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
         </Link>
 
         <div className="space-y-6">
-          {/* Resumo do Pedido - Mobile First (Topo) */}
           <Card className="bg-primary/5 border-primary/20">
             <CardContent className="p-6">
               <div className="flex justify-between items-center">
@@ -67,7 +67,6 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
             </CardContent>
           </Card>
 
-          {/* Formulário */}
           <Card className="bg-card/50 border-border rounded-2xl">
             <CardHeader>
               <CardTitle className="font-headline text-2xl">Checkout</CardTitle>
@@ -87,9 +86,6 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
-                  <p className="text-[10px] text-muted-foreground text-center">
-                    As credenciais serão enviadas para este e-mail.
-                  </p>
                 </div>
 
                 <Separator className="bg-border/50" />

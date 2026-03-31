@@ -1,7 +1,10 @@
+
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { Navbar } from "@/components/navbar";
-import { INITIAL_PRODUCTS } from "@/lib/mock-data";
+import { useProducts } from "@/context/products-context";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,11 +12,12 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle2, Star, Zap, ShoppingCart, Tv, Play } from "lucide-react";
 
 export default function Home() {
+  const { products } = useProducts();
   const heroImg = PlaceHolderImages.find(img => img.id === 'hero')?.imageUrl || '';
   const logoImg = PlaceHolderImages.find(img => img.id === 'logo')?.imageUrl || '';
 
   const categories = ['Netflix', 'Disney+', 'HBO Max', 'Prime Video', 'Star+', 'GloboPlay', 'Apple TV+'];
-  const tickerItems = [...categories, ...categories]; // Duplicado para loop infinito
+  const tickerItems = [...categories, ...categories];
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground overflow-x-hidden">
@@ -55,39 +59,19 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Ticker Section - Categorias */}
+      {/* Ticker Section */}
       <section className="py-12 bg-card/20 border-y border-white/5 relative overflow-hidden">
-        {/* Glow central estático para destacar os itens que passam no meio */}
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-20 bg-primary/20 blur-[60px] pointer-events-none rounded-full z-0"></div>
-        
         <div className="ticker-container pointer-events-none">
           <div className="animate-marquee flex whitespace-nowrap">
             {tickerItems.map((cat, i) => (
               <div key={i} className="ticker-item flex items-center gap-3 relative overflow-hidden group">
                 <Play className="w-4 h-4 fill-current opacity-50" />
                 {cat}
-                {/* Linha de brilho inferior */}
                 <div className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
               </div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* Stats - Mobile Optimized */}
-      <section className="py-10 bg-card/30">
-        <div className="container mx-auto px-6 grid grid-cols-2 gap-y-10 md:grid-cols-4">
-          {[
-            { label: "Clientes", value: "5.000+" },
-            { label: "Serviços", value: "15+" },
-            { label: "Suporte", value: "24/7" },
-            { label: "Entrega", value: "Imediata" }
-          ].map((stat, i) => (
-            <div key={i} className="text-center px-4">
-              <div className="text-2xl font-headline font-bold text-primary mb-1">{stat.value}</div>
-              <div className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-bold">{stat.label}</div>
-            </div>
-          ))}
         </div>
       </section>
 
@@ -102,8 +86,8 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-1 gap-8">
-          {INITIAL_PRODUCTS.map((product) => {
-            const logo = PlaceHolderImages.find(img => img.id === product.logoId)?.imageUrl || '';
+          {products.filter(p => p.active).map((product) => {
+            const logo = PlaceHolderImages.find(img => img.id === product.logoId)?.imageUrl || PlaceHolderImages.find(img => img.id === 'netflix')?.imageUrl || '';
             return (
               <Card key={product.id} className="group bg-card/60 border-white/5 hover:border-primary/50 transition-all duration-500 rounded-[2.5rem] overflow-hidden shadow-2xl backdrop-blur-xl">
                 <CardHeader className="p-0">
@@ -128,7 +112,7 @@ export default function Home() {
                     <CardTitle className="text-3xl font-headline uppercase tracking-tight">{product.name}</CardTitle>
                   </div>
                   <ul className="space-y-3 mb-8">
-                    {product.features.slice(0, 4).map((feature, i) => (
+                    {product.features.map((feature, i) => (
                       <li key={i} className="flex items-center text-sm gap-3 text-muted-foreground">
                         <CheckCircle2 className="w-4 h-4 text-primary" />
                         <span>{feature}</span>
@@ -157,9 +141,7 @@ export default function Home() {
       {/* CTA Section */}
       <section className="py-20 px-6">
         <div className="bg-primary/5 border border-primary/20 rounded-[3rem] p-12 text-center relative overflow-hidden">
-          {/* Decorative blur */}
           <div className="absolute -top-20 -right-20 w-60 h-60 bg-primary/10 blur-[80px] rounded-full"></div>
-          
           <div className="relative z-10">
             <Zap className="w-14 h-14 text-primary mx-auto mb-6 animate-bounce" />
             <h2 className="text-4xl md:text-5xl font-headline font-bold mb-6 uppercase tracking-tight">Pronto para maratonar?</h2>
@@ -183,17 +165,7 @@ export default function Home() {
               <span className="pj-text">PJ</span> <span className="contas-text">CONTAS</span>
             </span>
           </div>
-          
-          <div className="grid grid-cols-2 gap-x-12 gap-y-6 md:flex md:gap-12">
-            {['Início', 'Produtos', 'Termos', 'Suporte'].map((link) => (
-              <Link key={link} href="#" className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground hover:text-primary transition-colors">
-                {link}
-              </Link>
-            ))}
-          </div>
-
           <div className="w-full max-w-md h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-          
           <p className="text-[10px] text-muted-foreground uppercase tracking-[0.1em] max-w-xs leading-loose">
             © 2024 <span className="pj-text">PJ</span> <span className="contas-text">CONTAS</span>. ENTRETENIMENTO DE ALTA QUALIDADE ACESSÍVEL PARA TODOS OS BRASILEIROS.
           </p>
