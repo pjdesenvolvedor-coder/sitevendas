@@ -43,10 +43,10 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
   };
 
   return (
-    <div className="min-h-screen pt-20 pb-12 bg-background">
+    <div className="min-h-screen pt-32 pb-12 bg-background">
       <Navbar />
       <div className="container mx-auto px-6 max-w-2xl">
-        <Link href="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary mb-6 text-sm font-bold uppercase tracking-widest">
+        <Link href="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary mb-8 text-sm font-bold uppercase tracking-widest transition-colors">
           <ArrowLeft className="w-4 h-4" />
           Voltar
         </Link>
