@@ -1,3 +1,4 @@
+
 "use client";
 
 import { use, useState, useEffect } from "react";
@@ -37,11 +38,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { createPixAction, checkPixStatusAction, PixResponse } from "@/lib/payment-actions";
-import Image from "next/image";
 
 export default function CheckoutPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
-  const { products } = useProducts();
+  const { products, sellCredential } = useProducts();
   const { toast } = useToast();
   
   const [selectedProducts, setSelectedProducts] = useState<StreamingService[]>([]);
@@ -63,7 +63,6 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
     screenPass?: string
   }[]>([]);
 
-  // Polling para verificar status do pagamento
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
@@ -71,18 +70,18 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
       interval = setInterval(async () => {
         const result = await checkPixStatusAction(pixData.id);
         if (result.status === 'paid') {
-          // Capturar credenciais antes de mudar o status
+          // Consumir credenciais do estoque global
           const credentials = selectedProducts.map(p => {
-            const productWithCreds = products.find(prod => prod.id === p.id);
-            const available = productWithCreds?.credentials?.find(c => !c.sold);
+            const sold = sellCredential(p.id);
             return {
               productName: p.name,
-              email: available?.email || "Pendente de envio",
-              pass: available?.password || "Pendente de envio",
-              screen: available?.screenName || "Pendente de envio",
-              screenPass: available?.screenPassword
+              email: sold?.email || "Pendente de envio",
+              pass: sold?.password || "Pendente de envio",
+              screen: sold?.screenName || "Pendente de envio",
+              screenPass: sold?.screenPassword
             };
           });
+          
           setPurchasedCredentials(credentials);
           setPaymentStatus('paid');
           clearInterval(interval);
@@ -91,13 +90,13 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
             description: "Seu acesso está liberado na tela.",
           });
         }
-      }, 5000); // Verifica a cada 5 segundos
+      }, 5000);
     }
 
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [paymentStatus, pixData?.id, toast, selectedProducts, products]);
+  }, [paymentStatus, pixData?.id, toast, selectedProducts, sellCredential]);
 
   useEffect(() => {
     const initialProduct = products.find(p => p.id === resolvedParams.id);
@@ -106,18 +105,13 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
     }
   }, [products, resolvedParams.id, selectedProducts.length]);
 
-  if (selectedProducts.length === 0 && products.length > 0) {
-    const p = products.find(p => p.id === resolvedParams.id);
-    if (!p) return <div className="p-20 text-center font-headline text-2xl text-white">PRODUTO NÃO ENCONTRADO.</div>;
-  }
-
   const handleAddProduct = (product: StreamingService) => {
     if (selectedProducts.find(p => p.id === product.id)) {
       toast({ title: "Atenção", description: "Este produto já está no seu carrinho." });
       return;
     }
     setSelectedProducts([...selectedProducts, product]);
-    setPixData(null); // Resetar PIX se o carrinho mudar
+    setPixData(null);
     setPaymentStatus('idle');
     toast({ title: "Produto Adicionado", description: `${product.name} foi incluído no pedido.` });
   };
@@ -155,7 +149,6 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
         description: "Efetue o pagamento para liberar seu acesso.",
       });
     } catch (error: any) {
-      console.error(error);
       toast({ 
         title: "Erro ao gerar PIX", 
         description: error.message || "Tente novamente em instantes.", 

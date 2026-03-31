@@ -13,6 +13,7 @@ type ProductsContextType = {
   updateProductsOrder: (reorderedProducts: StreamingService[]) => void;
   addCredential: (productId: string, credential: Omit<AccountCredential, 'id' | 'addedAt' | 'sold'>) => void;
   removeCredential: (productId: string, credentialId: string) => void;
+  sellCredential: (productId: string) => AccountCredential | null;
 };
 
 const ProductsContext = createContext<ProductsContextType | undefined>(undefined);
@@ -26,7 +27,6 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        // Garantir que todos os produtos tenham o campo credentials
         setProducts(parsed.map((p: any) => ({ ...p, credentials: p.credentials || [] })));
       } catch (e) {
         setProducts(INITIAL_PRODUCTS.map(p => ({ ...p, credentials: [] })));
@@ -93,6 +93,34 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
     }));
   };
 
+  const sellCredential = (productId: string): AccountCredential | null => {
+    let soldItem: AccountCredential | null = null;
+    
+    setProducts((prev) => prev.map((product) => {
+      if (product.id === productId) {
+        const credentialIndex = (product.credentials || []).findIndex(c => !c.sold);
+        
+        if (credentialIndex !== -1) {
+          const updatedCredentials = [...(product.credentials || [])];
+          updatedCredentials[credentialIndex] = {
+            ...updatedCredentials[credentialIndex],
+            sold: true
+          };
+          soldItem = updatedCredentials[credentialIndex];
+          
+          return {
+            ...product,
+            credentials: updatedCredentials,
+            stock: updatedCredentials.filter(c => !c.sold).length
+          };
+        }
+      }
+      return product;
+    }));
+    
+    return soldItem;
+  };
+
   return (
     <ProductsContext.Provider value={{ 
       products, 
@@ -101,7 +129,8 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
       updateProduct, 
       updateProductsOrder,
       addCredential,
-      removeCredential
+      removeCredential,
+      sellCredential
     }}>
       {children}
     </ProductsContext.Provider>
