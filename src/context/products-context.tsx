@@ -2,12 +2,13 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { StreamingService, AccountCredential, Order } from '@/lib/types';
+import { StreamingService, AccountCredential, Order, WebhookConfig } from '@/lib/types';
 import { INITIAL_PRODUCTS } from '@/lib/mock-data';
 
 type ProductsContextType = {
   products: StreamingService[];
   orders: Order[];
+  webhookSettings: WebhookConfig;
   addProduct: (product: StreamingService) => void;
   deleteProduct: (id: string) => void;
   updateProduct: (product: StreamingService) => void;
@@ -16,6 +17,19 @@ type ProductsContextType = {
   removeCredential: (productId: string, credentialId: string) => void;
   sellCredential: (productId: string) => AccountCredential | null;
   addOrder: (order: Order) => void;
+  updateWebhookSettings: (settings: WebhookConfig) => void;
+};
+
+const DEFAULT_WEBHOOK: WebhookConfig = {
+  url: '',
+  enabled: false,
+  fields: {
+    orderId: true,
+    customerName: true,
+    customerPhone: true,
+    total: true,
+    items: true,
+  }
 };
 
 const ProductsContext = createContext<ProductsContextType | undefined>(undefined);
@@ -23,11 +37,13 @@ const ProductsContext = createContext<ProductsContextType | undefined>(undefined
 export function ProductsProvider({ children }: { children: React.ReactNode }) {
   const [products, setProducts] = useState<StreamingService[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [webhookSettings, setWebhookSettings] = useState<WebhookConfig>(DEFAULT_WEBHOOK);
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     const savedProducts = localStorage.getItem('pj_contas_products');
     const savedOrders = localStorage.getItem('pj_contas_orders');
+    const savedWebhook = localStorage.getItem('pj_contas_webhook');
     
     if (savedProducts) {
       try {
@@ -47,6 +63,14 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
         setOrders([]);
       }
     }
+
+    if (savedWebhook) {
+      try {
+        setWebhookSettings(JSON.parse(savedWebhook));
+      } catch (e) {
+        setWebhookSettings(DEFAULT_WEBHOOK);
+      }
+    }
     
     setIsInitialized(true);
   }, []);
@@ -55,8 +79,9 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
     if (isInitialized) {
       localStorage.setItem('pj_contas_products', JSON.stringify(products));
       localStorage.setItem('pj_contas_orders', JSON.stringify(orders));
+      localStorage.setItem('pj_contas_webhook', JSON.stringify(webhookSettings));
     }
-  }, [products, orders, isInitialized]);
+  }, [products, orders, webhookSettings, isInitialized]);
 
   const addProduct = (product: StreamingService) => {
     setProducts((prev) => [{ ...product, credentials: [] }, ...prev]);
@@ -141,12 +166,33 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
 
   const addOrder = (order: Order) => {
     setOrders((prev) => [order, ...prev]);
+
+    // Trigger Webhook
+    if (webhookSettings.enabled && webhookSettings.url) {
+      const payload: any = {};
+      if (webhookSettings.fields.orderId) payload.orderId = order.id;
+      if (webhookSettings.fields.customerName) payload.customerName = order.customerName;
+      if (webhookSettings.fields.customerPhone) payload.customerPhone = order.customerPhone;
+      if (webhookSettings.fields.total) payload.totalValue = order.total;
+      if (webhookSettings.fields.items) payload.deliveredItems = order.items;
+
+      fetch(webhookSettings.url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).catch(err => console.warn("Webhook delivery failed:", err));
+    }
+  };
+
+  const updateWebhookSettings = (settings: WebhookConfig) => {
+    setWebhookSettings(settings);
   };
 
   return (
     <ProductsContext.Provider value={{ 
       products, 
       orders,
+      webhookSettings,
       addProduct, 
       deleteProduct, 
       updateProduct, 
@@ -154,7 +200,8 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
       addCredential,
       removeCredential,
       sellCredential,
-      addOrder
+      addOrder,
+      updateWebhookSettings
     }}>
       {children}
     </ProductsContext.Provider>

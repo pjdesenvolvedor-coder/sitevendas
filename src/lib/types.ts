@@ -42,3 +42,15 @@ export type Order = {
   total: number;
   items: DeliveredCredential[];
 };
+
+export type WebhookConfig = {
+  url: string;
+  enabled: boolean;
+  fields: {
+    orderId: boolean;
+    customerName: boolean;
+    customerPhone: boolean;
+    total: boolean;
+    items: boolean;
+  };
+};
