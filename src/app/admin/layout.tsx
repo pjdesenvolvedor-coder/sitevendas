@@ -30,17 +30,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const logoImg = PlaceHolderImages.find(img => img.id === 'logo')?.imageUrl || '';
 
   const SidebarContent = () => (
-    <div className="flex flex-col h-full bg-card border-r border-border">
-      <div className="p-6 border-b border-border flex items-center gap-2">
-        <div className="relative w-6 h-6">
+    <div className="flex flex-col h-full bg-card border-r border-white/5">
+      <div className="p-8 border-b border-white/5 flex items-center gap-3">
+        <div className="relative w-8 h-8">
           <Image src={logoImg} alt="Logo" fill className="object-contain" />
         </div>
-        <span className="text-xl font-headline font-bold">
+        <span className="text-2xl font-headline font-bold">
           <span className="text-primary">PJ</span> <span className="text-white">CONTAS</span>
         </span>
       </div>
       
-      <nav className="flex-1 p-4 space-y-2 mt-4">
+      <nav className="flex-1 p-6 space-y-3 mt-4">
         {NAV_ITEMS.map((item) => {
           const isActive = pathname === item.href;
           return (
@@ -48,23 +48,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Button 
                 variant={isActive ? "default" : "ghost"} 
                 className={cn(
-                  "w-full justify-start gap-3 py-6",
-                  isActive ? "bg-primary text-white" : "text-muted-foreground hover:text-primary hover:bg-primary/5"
+                  "w-full justify-start gap-4 py-8 rounded-2xl transition-all",
+                  isActive 
+                    ? "bg-primary text-white shadow-lg shadow-primary/20" 
+                    : "text-muted-foreground hover:text-primary hover:bg-primary/5"
                 )}
               >
-                <item.icon className="w-5 h-5" />
-                {item.label}
+                <item.icon className="w-6 h-6" />
+                <span className="font-bold uppercase tracking-widest text-xs">{item.label}</span>
               </Button>
             </Link>
           );
         })}
       </nav>
 
-      <div className="p-4 border-t border-border">
+      <div className="p-6 border-t border-white/5">
         <Link href="/">
-          <Button variant="ghost" className="w-full justify-start gap-3 text-muted-foreground hover:text-red-500 hover:bg-red-500/5">
-            <LogOut className="w-5 h-5" />
-            Sair do Painel
+          <Button variant="ghost" className="w-full justify-start gap-4 py-8 rounded-2xl text-muted-foreground hover:text-red-500 hover:bg-red-500/5">
+            <LogOut className="w-6 h-6" />
+            <span className="font-bold uppercase tracking-widest text-xs">Sair do Painel</span>
           </Button>
         </Link>
       </div>
@@ -72,28 +74,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   );
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-background text-foreground">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:block w-72 h-screen sticky top-0">
+      <aside className="hidden lg:block w-80 h-screen sticky top-0">
         <SidebarContent />
       </aside>
 
       {/* Mobile Nav */}
-      <div className="lg:hidden fixed top-4 right-4 z-50">
+      <div className="lg:hidden fixed top-6 right-6 z-50">
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
-            <Button variant="outline" size="icon" className="bg-card border-border">
-              <Menu className="w-6 h-6" />
+            <Button variant="outline" size="icon" className="bg-card border-white/10 w-14 h-14 rounded-2xl shadow-xl">
+              <Menu className="w-8 h-8 text-primary" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="p-0 border-none w-72">
+          <SheetContent side="left" className="p-0 border-none w-80 bg-background">
             <SidebarContent />
           </SheetContent>
         </Sheet>
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 p-4 md:p-8 overflow-x-hidden">
+      <main className="flex-1 p-6 md:p-12 overflow-x-hidden">
         {children}
       </main>
     </div>

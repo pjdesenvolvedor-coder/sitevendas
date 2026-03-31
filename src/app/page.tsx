@@ -1,4 +1,3 @@
-
 import Image from "next/image";
 import Link from "next/link";
 import { Navbar } from "@/components/navbar";
@@ -7,128 +6,144 @@ import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Star, Zap, ShoppingCart, Tv } from "lucide-react";
+import { CheckCircle2, Star, Zap, ShoppingCart, Tv, Play } from "lucide-react";
 
 export default function Home() {
   const heroImg = PlaceHolderImages.find(img => img.id === 'hero')?.imageUrl || '';
   const logoImg = PlaceHolderImages.find(img => img.id === 'logo')?.imageUrl || '';
+
+  const categories = ['Netflix', 'Disney+', 'HBO Max', 'Prime Video', 'Star+', 'GloboPlay', 'Apple TV+'];
+  const tickerItems = [...categories, ...categories]; // Duplicado para loop infinito
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground overflow-x-hidden">
       <Navbar />
       
       {/* Hero Section */}
-      <section className="relative pt-24 pb-12 overflow-hidden flex items-center min-h-[85vh]">
-        <div className="absolute inset-0 -z-10 opacity-30">
+      <section className="relative pt-32 pb-16 overflow-hidden flex items-center min-h-[90vh]">
+        <div className="absolute inset-0 -z-10 opacity-40">
           <Image 
             src={heroImg} 
             alt="Fundo Hero" 
             fill 
-            className="object-cover"
+            className="object-cover scale-110"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-background via-background/60 to-background"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-background via-background/80 to-background"></div>
         </div>
         
         <div className="container mx-auto px-6 text-center">
-          <Badge variant="outline" className="mb-4 border-primary text-primary px-3 py-1 text-[10px] uppercase tracking-tighter animate-pulse">
+          <Badge variant="outline" className="mb-6 border-primary/50 text-primary px-4 py-1.5 text-[10px] uppercase tracking-[0.2em] bg-primary/5">
             <Star className="w-3 h-3 mr-2 fill-primary" />
-            Oferta de Inauguração: 20% OFF
+            LÍDER EM ENTRETENIMENTO PREMIUM
           </Badge>
-          <h1 className="text-4xl sm:text-6xl md:text-7xl font-headline font-bold mb-4 leading-none">
+          <h1 className="text-5xl sm:text-7xl md:text-8xl font-headline font-bold mb-6 leading-[0.9] tracking-tight">
             STREAMING SEM <br />
-            <span className="text-primary italic">FRONTEIRAS.</span>
+            <span className="text-primary italic">LIMITES.</span>
           </h1>
-          <p className="text-base sm:text-lg text-muted-foreground mb-8 max-w-md mx-auto font-body leading-relaxed">
-            Acesso instantâneo às melhores plataformas do mundo. Sem burocracia, preço baixo e entrega imediata na <span className="text-primary font-bold">PJ</span> <span className="text-white font-bold">CONTAS</span>.
+          <p className="text-base sm:text-xl text-muted-foreground mb-10 max-w-lg mx-auto font-body leading-relaxed px-4">
+            Acesso instantâneo às melhores plataformas do mundo. Sem burocracia e com a confiança da <span className="pj-text">PJ</span> <span className="contas-text">CONTAS</span>.
           </p>
-          <div className="flex flex-col gap-3 px-4 sm:flex-row sm:justify-center">
-            <Button size="lg" className="bg-primary hover:bg-primary/90 w-full sm:w-auto h-14 text-lg rounded-xl font-bold shadow-lg shadow-primary/20">
+          <div className="flex flex-col gap-4 px-6 sm:flex-row sm:justify-center">
+            <Button size="lg" className="bg-primary hover:bg-primary/90 w-full sm:w-auto h-16 text-xl rounded-2xl font-bold shadow-2xl shadow-primary/30 uppercase tracking-widest">
               Ver Catálogo
             </Button>
-            <Button size="lg" variant="outline" className="w-full sm:w-auto h-14 text-lg rounded-xl font-bold border-muted hover:bg-muted/50">
-              Como Funciona
+            <Button size="lg" variant="outline" className="w-full sm:w-auto h-16 text-xl rounded-2xl font-bold border-white/10 bg-white/5 hover:bg-white/10 uppercase tracking-widest">
+              Suporte 24h
             </Button>
           </div>
         </div>
       </section>
 
-      {/* Stats */}
-      <section className="py-8 border-y border-border/50 bg-card/30">
-        <div className="container mx-auto px-4 grid grid-cols-2 gap-y-6 md:grid-cols-4">
+      {/* Ticker Section - Categorias (O que você pediu) */}
+      <section className="py-12 bg-card/20 border-y border-white/5 relative overflow-hidden">
+        {/* Glow central estático para destacar os itens que passam no meio */}
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-20 bg-primary/20 blur-[60px] pointer-events-none rounded-full z-0"></div>
+        
+        <div className="ticker-container pointer-events-none">
+          <div className="animate-marquee flex whitespace-nowrap">
+            {tickerItems.map((cat, i) => (
+              <div key={i} className="ticker-item flex items-center gap-3 relative overflow-hidden group">
+                <Play className="w-4 h-4 fill-current opacity-50" />
+                {cat}
+                {/* Linha de brilho inferior */}
+                <div className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Stats - Mobile Optimized */}
+      <section className="py-10 bg-card/30">
+        <div className="container mx-auto px-6 grid grid-cols-2 gap-y-10 md:grid-cols-4">
           {[
             { label: "Clientes", value: "5.000+" },
             { label: "Serviços", value: "15+" },
             { label: "Suporte", value: "24/7" },
             { label: "Entrega", value: "Imediata" }
           ].map((stat, i) => (
-            <div key={i} className="text-center px-2">
-              <div className="text-xl font-headline font-bold text-primary">{stat.value}</div>
-              <div className="text-[10px] text-muted-foreground uppercase tracking-widest mt-1">{stat.label}</div>
+            <div key={i} className="text-center px-4">
+              <div className="text-2xl font-headline font-bold text-primary mb-1">{stat.value}</div>
+              <div className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-bold">{stat.label}</div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Categorias - Scroll Horizontal Mobile */}
-      <div className="flex overflow-x-auto gap-2 px-6 py-6 no-scrollbar md:hidden">
-        {['Todos', 'Cinema', 'Séries', 'Esportes', 'Infantil', 'Premium'].map((cat) => (
-          <Badge key={cat} variant="outline" className="whitespace-nowrap px-4 py-2 rounded-lg border-muted hover:border-primary transition-colors">
-            {cat}
-          </Badge>
-        ))}
-      </div>
-
       {/* Product Grid */}
-      <section id="produtos" className="py-8 container mx-auto px-6">
-        <div className="mb-8">
-          <h2 className="text-3xl font-headline font-bold mb-2 uppercase">Plataformas</h2>
-          <p className="text-sm text-muted-foreground">
-            Escolha seu serviço e comece a assistir agora na <span className="text-primary font-bold">PJ CONTAS</span>.
+      <section id="produtos" className="py-16 container mx-auto px-6">
+        <div className="mb-12 text-center md:text-left">
+          <h2 className="text-4xl md:text-5xl font-headline font-bold mb-4 uppercase tracking-tighter">Plataformas Disponíveis</h2>
+          <div className="w-20 h-1 bg-primary mb-4 mx-auto md:mx-0"></div>
+          <p className="text-base text-muted-foreground max-w-md">
+            Escolha seu serviço favorito e receba os dados de acesso em segundos na <span className="pj-text">PJ</span> <span className="contas-text">CONTAS</span>.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-6">
+        <div className="grid grid-cols-1 gap-8">
           {INITIAL_PRODUCTS.map((product) => {
             const logo = PlaceHolderImages.find(img => img.id === product.logoId)?.imageUrl || '';
             return (
-              <Card key={product.id} className="group bg-card/40 border-border hover:border-primary/50 transition-all duration-300 rounded-2xl overflow-hidden shadow-xl">
+              <Card key={product.id} className="group bg-card/60 border-white/5 hover:border-primary/50 transition-all duration-500 rounded-[2.5rem] overflow-hidden shadow-2xl backdrop-blur-xl">
                 <CardHeader className="p-0">
-                  <div className="relative h-40 w-full">
+                  <div className="relative h-56 w-full overflow-hidden">
                     <Image 
                       src={logo} 
                       alt={product.name} 
                       fill 
-                      className="object-cover transition-all duration-500 opacity-80 group-hover:opacity-100"
+                      className="object-cover transition-transform duration-700 group-hover:scale-110 opacity-70 group-hover:opacity-100"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent"></div>
-                    <div className="absolute top-4 right-4">
-                      <Badge className="bg-primary/20 text-primary border-none font-bold">TOP</Badge>
+                    <div className="absolute inset-0 bg-gradient-to-t from-card via-card/40 to-transparent"></div>
+                    <div className="absolute top-6 right-6">
+                      <Badge className="bg-primary text-white border-none font-bold py-1 px-4 text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20">POPULAR</Badge>
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Tv className="w-5 h-5 text-primary" />
-                    <CardTitle className="text-2xl font-headline uppercase">{product.name}</CardTitle>
+                <CardContent className="p-8">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 rounded-xl bg-primary/10">
+                      <Tv className="w-6 h-6 text-primary" />
+                    </div>
+                    <CardTitle className="text-3xl font-headline uppercase tracking-tight">{product.name}</CardTitle>
                   </div>
-                  <ul className="space-y-2 mb-6">
-                    {product.features.slice(0, 3).map((feature, i) => (
-                      <li key={i} className="flex items-center text-xs gap-2 text-muted-foreground">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
+                  <ul className="space-y-3 mb-8">
+                    {product.features.slice(0, 4).map((feature, i) => (
+                      <li key={i} className="flex items-center text-sm gap-3 text-muted-foreground">
+                        <CheckCircle2 className="w-4 h-4 text-primary" />
                         <span>{feature}</span>
                       </li>
                     ))}
                   </ul>
-                  <div className="flex items-center justify-between gap-4">
-                    <div>
-                      <span className="text-[10px] text-muted-foreground uppercase tracking-tighter block leading-none">Apenas</span>
-                      <span className="text-2xl font-headline font-bold text-white">R$ {product.price.toFixed(2)}</span>
+                  <div className="flex flex-col gap-6">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-4xl font-headline font-bold text-white">R$ {product.price.toFixed(2)}</span>
+                      <span className="text-xs text-muted-foreground uppercase font-bold tracking-widest">/ MÊS</span>
                     </div>
-                    <Link href={`/checkout/${product.id}`} className="flex-1 max-w-[140px]">
-                      <Button className="bg-primary hover:bg-primary/90 w-full h-12 text-sm rounded-xl font-bold gap-2">
-                        <ShoppingCart className="w-4 h-4" />
-                        ASSINAR
+                    <Link href={`/checkout/${product.id}`} className="w-full">
+                      <Button className="bg-primary hover:bg-primary/90 w-full h-16 text-lg rounded-2xl font-bold gap-3 shadow-xl shadow-primary/20 uppercase tracking-[0.1em]">
+                        <ShoppingCart className="w-5 h-5" />
+                        ASSINAR AGORA
                       </Button>
                     </Link>
                   </div>
@@ -140,39 +155,48 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-12 px-6">
-        <div className="bg-primary/5 border border-primary/20 rounded-[32px] p-10 text-center relative overflow-hidden">
+      <section className="py-20 px-6">
+        <div className="bg-primary/5 border border-primary/20 rounded-[3rem] p-12 text-center relative overflow-hidden">
+          {/* Decorative blur */}
+          <div className="absolute -top-20 -right-20 w-60 h-60 bg-primary/10 blur-[80px] rounded-full"></div>
+          
           <div className="relative z-10">
-            <Zap className="w-10 h-10 text-primary mx-auto mb-4" />
-            <h2 className="text-3xl font-headline font-bold mb-4 uppercase">Acesso Imediato?</h2>
-            <p className="text-sm text-muted-foreground mb-8">
-              Receba suas credenciais segundos após a confirmação do pagamento com a <span className="text-primary font-bold">PJ CONTAS</span>.
+            <Zap className="w-14 h-14 text-primary mx-auto mb-6 animate-bounce" />
+            <h2 className="text-4xl md:text-5xl font-headline font-bold mb-6 uppercase tracking-tight">Pronto para maratonar?</h2>
+            <p className="text-lg text-muted-foreground mb-10 max-w-sm mx-auto">
+              O maior catálogo do mundo na palma da sua mão. Escolha <span className="pj-text">PJ</span> <span className="contas-text">CONTAS</span>.
             </p>
-            <Button size="lg" className="bg-primary hover:bg-primary/90 w-full max-w-xs h-14 text-lg rounded-2xl font-bold shadow-xl shadow-primary/30">
-              GARANTIR MEU ACESSO
+            <Button size="lg" className="bg-primary hover:bg-primary/90 w-full max-w-xs h-16 text-xl rounded-2xl font-bold shadow-2xl shadow-primary/30 uppercase tracking-widest">
+              COMEÇAR AGORA
             </Button>
           </div>
         </div>
       </section>
 
-      <footer className="py-12 bg-card/20 border-t border-border/50 px-6">
-        <div className="container mx-auto flex flex-col items-center text-center gap-6">
-          <div className="flex items-center gap-2">
-            <div className="relative w-6 h-6">
+      <footer className="py-16 bg-black/40 border-t border-white/5 px-6">
+        <div className="container mx-auto flex flex-col items-center text-center gap-10">
+          <div className="flex items-center gap-3">
+            <div className="relative w-8 h-8">
               <Image src={logoImg} alt="PJ CONTAS Logo" fill className="object-contain" />
             </div>
-            <span className="text-xl font-headline font-bold tracking-tight">
-              <span className="text-primary">PJ</span> <span className="text-white">CONTAS</span>
+            <span className="text-2xl font-headline font-bold tracking-tight">
+              <span className="pj-text">PJ</span> <span className="contas-text">CONTAS</span>
             </span>
           </div>
-          <p className="text-xs text-muted-foreground max-w-xs">
-            © 2024 PJ CONTAS. Todos os direitos reservados. Entretenimento acessível para todos.
-          </p>
-          <div className="flex gap-4 text-[10px] uppercase font-bold tracking-widest opacity-60">
-            <Link href="#" className="hover:text-primary">Termos</Link>
-            <Link href="#" className="hover:text-primary">Privacidade</Link>
-            <Link href="#" className="hover:text-primary">Suporte</Link>
+          
+          <div className="grid grid-cols-2 gap-x-12 gap-y-6 md:flex md:gap-12">
+            {['Início', 'Produtos', 'Termos', 'Suporte'].map((link) => (
+              <Link key={link} href="#" className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground hover:text-primary transition-colors">
+                {link}
+              </Link>
+            ))}
           </div>
+
+          <div className="w-full max-w-md h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+          
+          <p className="text-[10px] text-muted-foreground uppercase tracking-[0.1em] max-w-xs leading-loose">
+            © 2024 <span className="pj-text">PJ</span> <span className="contas-text">CONTAS</span>. ENTRETENIMENTO DE ALTA QUALIDADE ACESSÍVEL PARA TODOS OS BRASILEIROS.
+          </p>
         </div>
       </footer>
     </div>
