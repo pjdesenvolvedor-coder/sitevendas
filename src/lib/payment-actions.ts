@@ -1,3 +1,4 @@
+'use server';
 
 /**
  * @fileOverview Ações de servidor para integração com a API PushinPay.
@@ -26,7 +27,7 @@ export async function createPixAction(valueInReais: number) {
       },
       body: JSON.stringify({
         value: valueInCents,
-        webhook_url: "https://pjcontas.com/api/webhook/pushinpay" // Placeholder
+        webhook_url: "https://pjcontas.com/api/webhook/pushinpay"
       }),
     });
 

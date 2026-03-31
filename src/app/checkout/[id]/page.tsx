@@ -1,4 +1,3 @@
-
 "use client";
 
 import { use, useState, useEffect } from "react";
@@ -129,10 +128,11 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
         title: "PIX Gerado!", 
         description: "Efetue o pagamento para liberar seu acesso.",
       });
-    } catch (error) {
+    } catch (error: any) {
+      console.error(error);
       toast({ 
         title: "Erro ao gerar PIX", 
-        description: "Tente novamente em instantes.", 
+        description: error.message || "Tente novamente em instantes.", 
         variant: "destructive" 
       });
     } finally {
@@ -205,19 +205,23 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="bg-card border-white/10 w-64 p-2 rounded-xl">
-                  {availableToAdd.map(product => (
-                    <DropdownMenuItem 
-                      key={product.id} 
-                      className="flex justify-between items-center p-3 rounded-lg cursor-pointer hover:bg-primary/10 group"
-                      onClick={() => handleAddProduct(product)}
-                    >
-                      <div className="flex flex-col">
-                        <span className="font-bold text-sm text-white group-hover:text-primary">{product.name}</span>
-                        <span className="text-[8px] text-muted-foreground uppercase font-bold">Assinatura Mensal</span>
-                      </div>
-                      <span className="text-xs font-bold text-primary">R$ {product.price.toFixed(2)}</span>
-                    </DropdownMenuItem>
-                  ))}
+                  {availableToAdd.length > 0 ? (
+                    availableToAdd.map(product => (
+                      <DropdownMenuItem 
+                        key={product.id} 
+                        className="flex justify-between items-center p-3 rounded-lg cursor-pointer hover:bg-primary/10 group"
+                        onClick={() => handleAddProduct(product)}
+                      >
+                        <div className="flex flex-col">
+                          <span className="font-bold text-sm text-white group-hover:text-primary">{product.name}</span>
+                          <span className="text-[8px] text-muted-foreground uppercase font-bold">Assinatura Mensal</span>
+                        </div>
+                        <span className="text-xs font-bold text-primary">R$ {product.price.toFixed(2)}</span>
+                      </DropdownMenuItem>
+                    ))
+                  ) : (
+                    <div className="p-4 text-center text-[10px] text-muted-foreground uppercase font-bold">Sem mais produtos disponíveis</div>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -313,15 +317,20 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
                 </span>
               </div>
               <CardContent className="p-8 flex flex-col items-center gap-8">
-                <div className="bg-white p-4 rounded-3xl shadow-2xl">
-                  {pixData.qr_code_base64 && (
-                    <Image 
-                      src={`data:image/png;base64,${pixData.qr_code_base64}`}
+                <div className="bg-white p-4 rounded-3xl shadow-2xl flex items-center justify-center min-h-[280px] min-w-[280px]">
+                  {pixData.qr_code_base64 ? (
+                    <img 
+                      src={pixData.qr_code_base64.startsWith('data:') ? pixData.qr_code_base64 : `data:image/png;base64,${pixData.qr_code_base64}`}
                       alt="PIX QR Code"
                       width={280}
                       height={280}
-                      className="rounded-xl"
+                      className="rounded-xl block"
                     />
+                  ) : (
+                    <div className="flex flex-col items-center gap-4 text-muted-foreground p-8">
+                      <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                      <span className="text-[10px] font-bold uppercase">Carregando QR Code...</span>
+                    </div>
                   )}
                 </div>
 
