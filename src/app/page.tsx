@@ -9,7 +9,7 @@ import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Star, Zap, ShoppingCart, Tv, Play } from "lucide-react";
+import { CheckCircle2, Star, Zap, ShoppingCart, Tv, Play, Ban } from "lucide-react";
 
 export default function Home() {
   const { products } = useProducts();
@@ -31,7 +31,7 @@ export default function Home() {
       <Navbar />
       
       {/* Hero Section */}
-      <section className="relative pt-24 pb-12 overflow-hidden flex items-center">
+      <section className="relative pt-20 pb-12 overflow-hidden flex items-center">
         <div className="absolute inset-0 -z-10 opacity-40">
           <Image 
             src={heroImg} 
@@ -44,7 +44,7 @@ export default function Home() {
         </div>
         
         <div className="container mx-auto px-6 text-center">
-          <Badge variant="outline" className="mb-6 border-primary/50 text-primary px-4 py-1.5 text-[10px] uppercase tracking-[0.2em] bg-primary/5">
+          <Badge variant="outline" className="mb-8 border-primary/50 text-primary px-4 py-1.5 text-[10px] uppercase tracking-[0.2em] bg-primary/5">
             <Star className="w-3 h-3 mr-2 fill-primary" />
             LÍDER EM ENTRETENIMENTO PREMIUM
           </Badge>
@@ -98,6 +98,8 @@ export default function Home() {
 
         <div className="grid grid-cols-1 gap-8">
           {products.filter(p => p.active).map((product) => {
+            const hasStock = product.stock > 0;
+            
             return (
               <Card key={product.id} className="group bg-card/60 border-white/5 hover:border-primary/50 transition-all duration-500 rounded-[2.5rem] overflow-hidden shadow-2xl backdrop-blur-xl">
                 <CardHeader className="p-0">
@@ -112,7 +114,11 @@ export default function Home() {
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-card/40 via-transparent to-transparent"></div>
                     <div className="absolute top-6 right-6">
-                      <Badge className="bg-primary text-white border-none font-bold py-1 px-4 text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20">POPULAR</Badge>
+                      {hasStock ? (
+                        <Badge className="bg-primary text-white border-none font-bold py-1 px-4 text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20">POPULAR</Badge>
+                      ) : (
+                        <Badge variant="secondary" className="bg-muted text-muted-foreground border-none font-bold py-1 px-4 text-[10px] uppercase tracking-widest">INDISPONÍVEL</Badge>
+                      )}
                     </div>
                   </div>
                 </CardHeader>
@@ -136,12 +142,20 @@ export default function Home() {
                       <span className="text-4xl font-headline font-bold text-white">R$ {product.price.toFixed(2)}</span>
                       <span className="text-xs text-muted-foreground uppercase font-bold tracking-widest">/ MÊS</span>
                     </div>
-                    <Link href={`/checkout/${product.id}`} className="w-full">
-                      <Button className="bg-primary hover:bg-primary/90 w-full h-16 text-lg rounded-2xl font-bold gap-3 shadow-xl shadow-primary/20 uppercase tracking-[0.1em]">
-                        <ShoppingCart className="w-5 h-5" />
-                        ASSINAR AGORA
+                    
+                    {hasStock ? (
+                      <Link href={`/checkout/${product.id}`} className="w-full">
+                        <Button className="bg-primary hover:bg-primary/90 w-full h-16 text-lg rounded-2xl font-bold gap-3 shadow-xl shadow-primary/20 uppercase tracking-[0.1em]">
+                          <ShoppingCart className="w-5 h-5" />
+                          ASSINAR AGORA
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Button disabled className="bg-muted/50 text-muted-foreground w-full h-16 text-lg rounded-2xl font-bold gap-3 cursor-not-allowed uppercase tracking-[0.1em] border border-white/5">
+                        <Ban className="w-5 h-5" />
+                        SEM ESTOQUE
                       </Button>
-                    </Link>
+                    )}
                   </div>
                 </CardContent>
               </Card>
