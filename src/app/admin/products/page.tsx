@@ -4,17 +4,19 @@
 import { useState } from "react";
 import { useProducts } from "@/context/products-context";
 import { Button } from "@/components/ui/button";
-import { Plus, Edit3, Trash2, Wand2, Loader2, AlertCircle, X, CheckCircle2, ChevronUp, ChevronDown } from "lucide-react";
+import { 
+  Plus, 
+  Trash2, 
+  Wand2, 
+  Loader2, 
+  AlertCircle, 
+  X, 
+  CheckCircle2, 
+  GripVertical,
+  Tv
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { 
   Dialog, 
@@ -46,6 +48,7 @@ import {
 import { generateProductDescription } from "@/ai/flows/admin-ai-product-description-generation";
 import { useToast } from "@/hooks/use-toast";
 import { StreamingService } from "@/lib/types";
+import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 
 const LOGO_OPTIONS = [
   { id: 'netflix', name: 'Netflix' },
@@ -55,7 +58,7 @@ const LOGO_OPTIONS = [
 ];
 
 export default function AdminProductsPage() {
-  const { products, addProduct, deleteProduct } = useProducts();
+  const { products, addProduct, deleteProduct, updateProductsOrder } = useProducts();
   const [isAdding, setIsAdding] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [productToDelete, setProductToDelete] = useState<StreamingService | null>(null);
@@ -108,14 +111,21 @@ export default function AdminProductsPage() {
     });
   };
 
-  const moveFeature = (index: number, direction: 'up' | 'down') => {
-    const newFeatures = [...formData.features];
-    if (direction === 'up' && index > 0) {
-      [newFeatures[index], newFeatures[index - 1]] = [newFeatures[index - 1], newFeatures[index]];
-    } else if (direction === 'down' && index < newFeatures.length - 1) {
-      [newFeatures[index], newFeatures[index + 1]] = [newFeatures[index + 1], newFeatures[index]];
-    }
-    setFormData({ ...formData, features: newFeatures });
+  const onDragEndFeatures = (result: DropResult) => {
+    if (!result.destination) return;
+    const items = Array.from(formData.features);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+    setFormData({ ...formData, features: items });
+  };
+
+  const onDragEndProducts = (result: DropResult) => {
+    if (!result.destination) return;
+    const items = Array.from(products);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+    updateProductsOrder(items);
+    toast({ title: "Ordem Atualizada", description: "A vitrine foi reorganizada." });
   };
 
   const handleSaveProduct = () => {
@@ -146,28 +156,12 @@ export default function AdminProductsPage() {
     setNewFeature("");
   };
 
-  const confirmDelete = (product: StreamingService) => {
-    setProductToDelete(product);
-  };
-
-  const handleDelete = () => {
-    if (productToDelete) {
-      deleteProduct(productToDelete.id);
-      toast({ 
-        title: "Produto Excluído", 
-        description: `${productToDelete.name} foi removido do catálogo.`,
-        variant: "default"
-      });
-      setProductToDelete(null);
-    }
-  };
-
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-headline font-bold mb-2">Produtos</h1>
-          <p className="text-muted-foreground">Gerencie seus serviços de streaming e estoque.</p>
+          <p className="text-muted-foreground">Arraste os cards para organizar a ordem na vitrine.</p>
         </div>
 
         <Dialog open={isAdding} onOpenChange={setIsAdding}>
@@ -237,7 +231,7 @@ export default function AdminProductsPage() {
               </div>
 
               <div className="space-y-3">
-                <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Vantagens do Produto</Label>
+                <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Vantagens (Arraste para ordenar)</Label>
                 <div className="flex gap-2">
                   <Input 
                     placeholder="Ex: 4 Telas simultâneas" 
@@ -255,47 +249,49 @@ export default function AdminProductsPage() {
                   </Button>
                 </div>
                 
-                <div className="space-y-2 mt-2">
-                  {formData.features.map((feature, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-3 bg-background border border-border rounded-xl">
-                      <div className="flex items-center gap-3 flex-1">
-                        <div className="flex flex-col gap-1">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-5 w-5 hover:text-primary disabled:opacity-30"
-                            onClick={() => moveFeature(idx, 'up')}
-                            disabled={idx === 0}
-                          >
-                            <ChevronUp className="w-4 h-4" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-5 w-5 hover:text-primary disabled:opacity-30"
-                            onClick={() => moveFeature(idx, 'down')}
-                            disabled={idx === formData.features.length - 1}
-                          >
-                            <ChevronDown className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-                        <span className="text-sm font-medium leading-tight">{feature}</span>
-                      </div>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-8 w-8 text-muted-foreground hover:text-red-500"
-                        onClick={() => removeFeature(idx)}
+                <DragDropContext onDragEnd={onDragEndFeatures}>
+                  <Droppable droppableId="features">
+                    {(provided) => (
+                      <div 
+                        {...provided.droppableProps} 
+                        ref={provided.innerRef} 
+                        className="space-y-2 mt-2"
                       >
-                        <X className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
-                  {formData.features.length === 0 && (
-                    <p className="text-[10px] text-muted-foreground italic text-center py-2">Nenhuma vantagem adicionada. Usaremos as padrões.</p>
-                  )}
-                </div>
+                        {formData.features.map((feature, idx) => (
+                          <Draggable key={`${feature}-${idx}`} draggableId={`${feature}-${idx}`} index={idx}>
+                            {(provided) => (
+                              <div 
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                className="flex items-center justify-between p-3 bg-background border border-border rounded-xl"
+                              >
+                                <div className="flex items-center gap-3 flex-1">
+                                  <div {...provided.dragHandleProps} className="text-muted-foreground px-1">
+                                    <GripVertical className="w-4 h-4" />
+                                  </div>
+                                  <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+                                  <span className="text-sm font-medium leading-tight">{feature}</span>
+                                </div>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="h-8 w-8 text-muted-foreground hover:text-red-500"
+                                  onClick={() => removeFeature(idx)}
+                                >
+                                  <X className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
+                        {formData.features.length === 0 && (
+                          <p className="text-[10px] text-muted-foreground italic text-center py-2">Nenhuma vantagem adicionada.</p>
+                        )}
+                      </div>
+                    )}
+                  </Droppable>
+                </DragDropContext>
               </div>
 
               <div className="space-y-2">
@@ -315,7 +311,7 @@ export default function AdminProductsPage() {
                 <Textarea 
                   id="description" 
                   rows={3} 
-                  placeholder="Descreva as vantagens do serviço..." 
+                  placeholder="Descreva as vantagens..." 
                   className="bg-background border-border rounded-xl resize-none"
                   value={formData.description}
                   onChange={(e) => setFormData({...formData, description: e.target.value})}
@@ -330,56 +326,72 @@ export default function AdminProductsPage() {
         </Dialog>
       </div>
 
-      <Card className="bg-card/50 border-border rounded-3xl overflow-hidden">
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent border-border bg-muted/10">
-                <TableHead className="font-bold uppercase tracking-widest text-[10px] h-14">Serviço</TableHead>
-                <TableHead className="font-bold uppercase tracking-widest text-[10px] h-14">Preço</TableHead>
-                <TableHead className="font-bold uppercase tracking-widest text-[10px] h-14">Estoque</TableHead>
-                <TableHead className="font-bold uppercase tracking-widest text-[10px] h-14">Status</TableHead>
-                <TableHead className="text-right font-bold uppercase tracking-widest text-[10px] h-14">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {products.map((product) => (
-                <TableRow key={product.id} className="border-border hover:bg-muted/30 transition-colors">
-                  <TableCell className="font-bold py-6">
-                    <div className="flex flex-col">
-                      <span>{product.name}</span>
-                      <span className="text-[10px] text-muted-foreground uppercase font-normal">{product.logoId}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="font-bold text-primary">R$ {product.price.toFixed(2)}</TableCell>
-                  <TableCell>
-                    <span className={product.stock < 10 ? "text-red-500 font-bold" : "font-medium"}>
-                      {product.stock} un.
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={product.active ? "bg-green-500/20 text-green-500 border-none px-3" : "bg-muted text-muted-foreground px-3"}>
-                      {product.active ? "Ativo" : "Inativo"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-10 w-10 hover:text-red-500 rounded-xl hover:bg-red-500/5"
-                        onClick={() => confirmDelete(product)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
+      <DragDropContext onDragEnd={onDragEndProducts}>
+        <Droppable droppableId="products">
+          {(provided) => (
+            <div 
+              {...provided.droppableProps} 
+              ref={provided.innerRef} 
+              className="grid grid-cols-1 gap-4"
+            >
+              {products.map((product, idx) => (
+                <Draggable key={product.id} draggableId={product.id} index={idx}>
+                  {(provided) => (
+                    <Card 
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                      className="bg-card/50 border-border rounded-2xl overflow-hidden group"
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-4">
+                          <div {...provided.dragHandleProps} className="text-muted-foreground">
+                            <GripVertical className="w-5 h-5" />
+                          </div>
+                          
+                          <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 rounded-lg bg-primary/10">
+                                <Tv className="w-5 h-5 text-primary" />
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="font-bold text-sm">{product.name}</span>
+                                <span className="text-[10px] text-muted-foreground uppercase">{product.logoId}</span>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-6">
+                              <div className="flex flex-col text-right">
+                                <span className="font-bold text-primary text-sm">R$ {product.price.toFixed(2)}</span>
+                                <span className={`text-[10px] ${product.stock < 10 ? 'text-red-500 font-bold' : 'text-muted-foreground'}`}>
+                                  {product.stock} un.
+                                </span>
+                              </div>
+
+                              <Badge className={product.active ? "bg-green-500/20 text-green-500 border-none" : "bg-muted text-muted-foreground"}>
+                                {product.active ? "Ativo" : "Inativo"}
+                              </Badge>
+
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-10 w-10 text-muted-foreground hover:text-red-500 hover:bg-red-500/5 rounded-xl"
+                                onClick={() => setProductToDelete(product)}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </Draggable>
               ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
 
       <AlertDialog open={!!productToDelete} onOpenChange={(open) => !open && setProductToDelete(null)}>
         <AlertDialogContent className="bg-card border-border rounded-[2rem]">
@@ -389,15 +401,20 @@ export default function AdminProductsPage() {
             </div>
             <AlertDialogTitle className="font-headline text-2xl text-center uppercase">Confirmar Exclusão</AlertDialogTitle>
             <AlertDialogDescription className="text-center text-muted-foreground">
-              Você tem certeza que deseja excluir <strong>{productToDelete?.name}</strong>? 
-              <br />Esta ação não poderá ser desfeita.
+              Deseja excluir <strong>{productToDelete?.name}</strong>?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="sm:justify-center gap-3 mt-4">
             <AlertDialogCancel className="rounded-xl h-12 font-bold px-8">CANCELAR</AlertDialogCancel>
             <AlertDialogAction 
               className="bg-red-500 hover:bg-red-600 rounded-xl h-12 font-bold px-8"
-              onClick={handleDelete}
+              onClick={() => {
+                if (productToDelete) {
+                  deleteProduct(productToDelete.id);
+                  toast({ title: "Produto Excluído", description: "Removido com sucesso." });
+                  setProductToDelete(null);
+                }
+              }}
             >
               EXCLUIR AGORA
             </AlertDialogAction>

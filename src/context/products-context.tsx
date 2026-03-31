@@ -10,6 +10,7 @@ type ProductsContextType = {
   addProduct: (product: StreamingService) => void;
   deleteProduct: (id: string) => void;
   updateProduct: (product: StreamingService) => void;
+  updateProductsOrder: (reorderedProducts: StreamingService[]) => void;
 };
 
 const ProductsContext = createContext<ProductsContextType | undefined>(undefined);
@@ -18,7 +19,6 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
   const [products, setProducts] = useState<StreamingService[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Carregar do localStorage ou usar iniciais
   useEffect(() => {
     const saved = localStorage.getItem('pj_contas_products');
     if (saved) {
@@ -33,7 +33,6 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
     setIsInitialized(true);
   }, []);
 
-  // Salvar sempre que mudar
   useEffect(() => {
     if (isInitialized) {
       localStorage.setItem('pj_contas_products', JSON.stringify(products));
@@ -52,8 +51,18 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
     setProducts((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
   };
 
+  const updateProductsOrder = (reordered: StreamingService[]) => {
+    setProducts(reordered);
+  };
+
   return (
-    <ProductsContext.Provider value={{ products, addProduct, deleteProduct, updateProduct }}>
+    <ProductsContext.Provider value={{ 
+      products, 
+      addProduct, 
+      deleteProduct, 
+      updateProduct, 
+      updateProductsOrder 
+    }}>
       {children}
     </ProductsContext.Provider>
   );
