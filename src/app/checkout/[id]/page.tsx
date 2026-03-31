@@ -9,8 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { ShieldCheck, ArrowLeft, Loader2, QrCode, User, Phone, Mail } from "lucide-react";
-import Link from "next/link";
+import { ShieldCheck, ArrowLeft, Loader2, QrCode, User, Phone } from "lucide-react";
+import Link from "link";
 import { useToast } from "@/hooks/use-toast";
 
 export default function CheckoutPage({ params }: { params: Promise<{ id: string }> }) {
@@ -22,7 +22,6 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
   
   const [formData, setFormData] = useState({
     fullName: "",
-    email: "",
     phone: ""
   });
 
@@ -32,7 +31,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
 
   const handleCheckout = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.fullName || !formData.email || !formData.phone) {
+    if (!formData.fullName || !formData.phone) {
       toast({ 
         title: "Campos Incompletos", 
         description: "Por favor, preencha todos os seus dados para continuar.", 
@@ -47,7 +46,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
       setLoading(false);
       toast({ 
         title: "Pedido Gerado!", 
-        description: "Seu código PIX foi enviado para o seu e-mail e telefone.",
+        description: "Seu código PIX foi gerado e enviado para o seu WhatsApp.",
       });
     }, 2000);
   };
@@ -96,24 +95,6 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
                       required
                       value={formData.fullName}
                       onChange={(e) => setFormData({...formData, fullName: e.target.value})}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] ml-1">
-                    E-mail de Entrega
-                  </Label>
-                  <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input 
-                      id="email" 
-                      type="email" 
-                      placeholder="seu@email.com"
-                      className="bg-background border-white/5 h-14 pl-12 rounded-xl focus:ring-primary"
-                      required
-                      value={formData.email}
-                      onChange={(e) => setFormData({...formData, email: e.target.value})}
                     />
                   </div>
                 </div>
