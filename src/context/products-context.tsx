@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
@@ -169,21 +170,33 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
 
     // Dispara o Webhook se estiver ativo
     if (webhookSettings.enabled && webhookSettings.url) {
-      // Para manter o formato flat solicitado, enviamos uma requisição por item vendido
-      order.items.forEach(item => {
-        const payload = {
-          nome: order.customerName,
-          telefone: order.customerPhone,
-          produto: item.productName,
-          valor: order.total,
-          emailConta: item.email,
-          senhaConta: item.pass,
-          perfil: item.screen,
-          senhaPerfil: item.screenPass || 'Sem senha'
-        };
+      // Função assíncrona para enviar os itens um por um com atraso
+      const sendWebhooksSequentially = async () => {
+        for (let i = 0; i < order.items.length; i++) {
+          const item = order.items[i];
+          const payload = {
+            nome: order.customerName,
+            telefone: order.customerPhone,
+            produto: item.productName,
+            valor: order.total,
+            emailConta: item.email,
+            senhaConta: item.pass,
+            perfil: item.screen,
+            senhaPerfil: item.screenPass || 'Sem senha'
+          };
 
-        sendWebhookAction(webhookSettings.url, payload);
-      });
+          // Dispara a requisição
+          await sendWebhookAction(webhookSettings.url, payload);
+
+          // Se houver mais de um item e não for o último, aguarda 10 segundos
+          if (i < order.items.length - 1) {
+            console.log(`[Webhook] Aguardando 10 segundos antes de enviar o próximo item (${i + 2}/${order.items.length})...`);
+            await new Promise(resolve => setTimeout(resolve, 10000));
+          }
+        }
+      };
+
+      sendWebhooksSequentially();
     }
   };
 
