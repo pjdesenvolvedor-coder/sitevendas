@@ -20,7 +20,12 @@ import {
   ChevronDown,
   Copy,
   CheckCircle2,
-  Zap
+  Zap,
+  Mail,
+  Lock,
+  Monitor,
+  Key,
+  AlertTriangle
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
@@ -50,6 +55,14 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
     phone: ""
   });
 
+  const [purchasedCredentials, setPurchasedCredentials] = useState<{
+    productName: string, 
+    email: string, 
+    pass: string, 
+    screen: string, 
+    screenPass?: string
+  }[]>([]);
+
   // Polling para verificar status do pagamento
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -58,11 +71,24 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
       interval = setInterval(async () => {
         const result = await checkPixStatusAction(pixData.id);
         if (result.status === 'paid') {
+          // Capturar credenciais antes de mudar o status
+          const credentials = selectedProducts.map(p => {
+            const productWithCreds = products.find(prod => prod.id === p.id);
+            const available = productWithCreds?.credentials?.find(c => !c.sold);
+            return {
+              productName: p.name,
+              email: available?.email || "Pendente de envio",
+              pass: available?.password || "Pendente de envio",
+              screen: available?.screenName || "Pendente de envio",
+              screenPass: available?.screenPassword
+            };
+          });
+          setPurchasedCredentials(credentials);
           setPaymentStatus('paid');
           clearInterval(interval);
           toast({
             title: "Pagamento Confirmado!",
-            description: "Seu acesso está sendo liberado.",
+            description: "Seu acesso está liberado na tela.",
           });
         }
       }, 5000); // Verifica a cada 5 segundos
@@ -71,7 +97,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [paymentStatus, pixData?.id, toast]);
+  }, [paymentStatus, pixData?.id, toast, selectedProducts, products]);
 
   useEffect(() => {
     const initialProduct = products.find(p => p.id === resolvedParams.id);
@@ -140,13 +166,11 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
     }
   };
 
-  const copyToClipboard = () => {
-    if (pixData?.qr_code) {
-      navigator.clipboard.writeText(pixData.qr_code);
-      setCopied(true);
-      toast({ title: "Copiado!", description: "Código PIX copiado para a área de transferência." });
-      setTimeout(() => setCopied(false), 2000);
-    }
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    toast({ title: "Copiado!", description: "Código copiado com sucesso." });
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const availableToAdd = products.filter(p => 
@@ -159,40 +183,44 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
     <div className="min-h-screen pt-32 pb-12 bg-background">
       <Navbar />
       <div className="container mx-auto px-6 max-w-2xl">
-        <Link href="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary mb-8 text-sm font-bold uppercase tracking-widest transition-colors">
-          <ArrowLeft className="w-4 h-4" />
-          Voltar para a Loja
-        </Link>
+        {paymentStatus !== 'paid' && (
+          <Link href="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary mb-8 text-sm font-bold uppercase tracking-widest transition-colors">
+            <ArrowLeft className="w-4 h-4" />
+            Voltar para a Loja
+          </Link>
+        )}
 
         <div className="space-y-6">
-          <div className="space-y-4">
-            {selectedProducts.map((product) => (
-              <Card key={product.id} className="bg-primary/5 border-primary/20 rounded-2xl overflow-hidden border-dashed relative group">
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-center gap-4">
-                    <div className="flex-1 min-w-0">
-                      <h2 className="font-headline text-xl text-white truncate">{product.name}</h2>
-                      <p className="text-[10px] text-primary font-bold uppercase tracking-[0.2em]">Entrega Imediata • Assinatura Mensal</p>
-                    </div>
-                    <div className="flex items-center gap-4 shrink-0">
-                      <div className="text-right">
-                        <span className="text-xl font-headline font-bold text-primary">R$ {product.price.toFixed(2)}</span>
-                        <p className="text-[8px] text-muted-foreground uppercase font-bold">por mês</p>
+          {paymentStatus !== 'paid' && (
+            <div className="space-y-4">
+              {selectedProducts.map((product) => (
+                <Card key={product.id} className="bg-primary/5 border-primary/20 rounded-2xl overflow-hidden border-dashed relative group">
+                  <CardContent className="p-6">
+                    <div className="flex justify-between items-center gap-4">
+                      <div className="flex-1 min-w-0">
+                        <h2 className="font-headline text-xl text-white truncate">{product.name}</h2>
+                        <p className="text-[10px] text-primary font-bold uppercase tracking-[0.2em]">Entrega Imediata • Assinatura Mensal</p>
                       </div>
-                      {selectedProducts.length > 1 && paymentStatus === 'idle' && (
-                        <button 
-                          className="text-muted-foreground hover:text-red-500 transition-colors"
-                          onClick={() => handleRemoveProduct(product.id)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
+                      <div className="flex items-center gap-4 shrink-0">
+                        <div className="text-right">
+                          <span className="text-xl font-headline font-bold text-primary">R$ {product.price.toFixed(2)}</span>
+                          <p className="text-[8px] text-muted-foreground uppercase font-bold">por mês</p>
+                        </div>
+                        {selectedProducts.length > 1 && paymentStatus === 'idle' && (
+                          <button 
+                            className="text-muted-foreground hover:text-red-500 transition-colors"
+                            onClick={() => handleRemoveProduct(product.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
 
           {paymentStatus === 'idle' && (
             <div className="flex justify-center">
@@ -227,13 +255,15 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
             </div>
           )}
 
-          <div className="bg-card/30 border border-white/5 p-6 rounded-2xl flex justify-between items-center">
-            <div className="flex flex-col">
-              <span className="font-headline text-xl text-muted-foreground uppercase tracking-widest">Valor Total</span>
-              <span className="text-[10px] text-primary font-bold uppercase">Pagamento Único (Mensalidade)</span>
+          {paymentStatus !== 'paid' && (
+            <div className="bg-card/30 border border-white/5 p-6 rounded-2xl flex justify-between items-center">
+              <div className="flex flex-col">
+                <span className="font-headline text-xl text-muted-foreground uppercase tracking-widest">Valor Total</span>
+                <span className="text-[10px] text-primary font-bold uppercase">Pagamento Único (Mensalidade)</span>
+              </div>
+              <span className="font-headline text-4xl text-primary">R$ {totalValue.toFixed(2)}</span>
             </div>
-            <span className="font-headline text-4xl text-primary">R$ {totalValue.toFixed(2)}</span>
-          </div>
+          )}
 
           {paymentStatus === 'idle' ? (
             <Card className="bg-card/50 border-white/5 rounded-[2.5rem] shadow-2xl backdrop-blur-xl">
@@ -342,7 +372,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
                         {pixData.qr_code}
                       </div>
                       <Button 
-                        onClick={copyToClipboard}
+                        onClick={() => copyToClipboard(pixData.qr_code)}
                         className="absolute right-2 top-1/2 -translate-y-1/2 h-10 w-10 bg-primary hover:bg-primary/90 rounded-lg shadow-lg"
                       >
                         {copied ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
@@ -351,7 +381,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
                   </div>
 
                   <Button 
-                    onClick={copyToClipboard}
+                    onClick={() => copyToClipboard(pixData.qr_code)}
                     className="w-full h-14 bg-primary hover:bg-primary/90 font-bold uppercase tracking-widest rounded-xl text-xs gap-2"
                   >
                     <Copy className="w-4 h-4" />
@@ -365,26 +395,79 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
               </CardContent>
             </Card>
           ) : paymentStatus === 'paid' && (
-            <Card className="bg-card/50 border-green-500/30 border-2 rounded-[2.5rem] shadow-2xl backdrop-blur-xl overflow-hidden py-12 px-8 text-center">
-              <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                <CheckCircle2 className="w-10 h-10 text-green-500" />
-              </div>
-              <h2 className="font-headline text-4xl text-white mb-2">PAGAMENTO APROVADO!</h2>
-              <p className="text-muted-foreground text-sm uppercase tracking-widest font-bold mb-8">Obrigado pela preferência.</p>
-              
-              <div className="bg-primary/5 border border-primary/20 rounded-2xl p-6 mb-8">
-                <Zap className="w-8 h-8 text-primary mx-auto mb-4" />
-                <p className="text-xs text-white uppercase font-bold tracking-widest">
-                  Suas credenciais de acesso foram enviadas <br /> para o seu WhatsApp cadastrado.
-                </p>
-              </div>
+            <div className="space-y-6">
+              <Card className="bg-card/50 border-green-500/30 border-2 rounded-[2.5rem] shadow-2xl backdrop-blur-xl overflow-hidden py-10 px-8 text-center">
+                <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle2 className="w-8 h-8 text-green-500" />
+                </div>
+                <h2 className="font-headline text-3xl text-white mb-1">PAGAMENTO APROVADO!</h2>
+                <p className="text-muted-foreground text-[10px] uppercase tracking-widest font-bold mb-8">Obrigado pela preferência.</p>
+                
+                <div className="space-y-4 text-left">
+                  {purchasedCredentials.map((cred, idx) => (
+                    <Card key={idx} className="bg-background/50 border-white/5 rounded-2xl overflow-hidden">
+                      <div className="bg-primary/10 px-4 py-2 border-b border-white/5 flex items-center gap-2">
+                        <Zap className="w-3 h-3 text-primary" />
+                        <span className="text-[10px] font-bold text-white uppercase tracking-wider">{cred.productName}</span>
+                      </div>
+                      <CardContent className="p-4 space-y-3">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-1">
+                            <Label className="text-[8px] uppercase text-muted-foreground font-bold">E-mail</Label>
+                            <div className="flex items-center gap-2 bg-black/20 p-2 rounded-lg text-xs font-mono break-all text-white relative group">
+                              <Mail className="w-3 h-3 shrink-0 text-primary" />
+                              <span className="truncate">{cred.email}</span>
+                              <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity ml-auto" onClick={() => copyToClipboard(cred.email)}>
+                                <Copy className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-[8px] uppercase text-muted-foreground font-bold">Senha</Label>
+                            <div className="flex items-center gap-2 bg-black/20 p-2 rounded-lg text-xs font-mono break-all text-white relative group">
+                              <Lock className="w-3 h-3 shrink-0 text-primary" />
+                              <span className="truncate">{cred.pass}</span>
+                              <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity ml-auto" onClick={() => copyToClipboard(cred.pass)}>
+                                <Copy className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-1">
+                            <Label className="text-[8px] uppercase text-muted-foreground font-bold">Perfil / Tela</Label>
+                            <div className="flex items-center gap-2 bg-black/20 p-2 rounded-lg text-xs font-mono break-all text-white">
+                              <Monitor className="w-3 h-3 shrink-0 text-primary" />
+                              <span className="truncate">{cred.screen}</span>
+                            </div>
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-[8px] uppercase text-muted-foreground font-bold">Senha Perfil</Label>
+                            <div className="flex items-center gap-2 bg-black/20 p-2 rounded-lg text-xs font-mono break-all text-white">
+                              <Key className="w-3 h-3 shrink-0 text-primary" />
+                              <span className="truncate">{cred.screenPass || "Sem Senha"}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
 
-              <Link href="/">
-                <Button className="bg-white text-black hover:bg-white/90 font-bold h-14 w-full rounded-xl uppercase tracking-widest">
-                  Voltar ao Início
-                </Button>
-              </Link>
-            </Card>
+                <div className="mt-8 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl flex items-start gap-3 text-left">
+                  <AlertTriangle className="w-5 h-5 text-yellow-500 shrink-0" />
+                  <p className="text-[10px] text-yellow-500/90 font-bold uppercase leading-relaxed">
+                    Alerta, te enviamos também o acesso pelo zap se precisar de suporte contate por lá!
+                  </p>
+                </div>
+
+                <Link href="/" className="block mt-8">
+                  <Button className="bg-white text-black hover:bg-white/90 font-bold h-14 w-full rounded-xl uppercase tracking-widest">
+                    Voltar ao Início
+                  </Button>
+                </Link>
+              </Card>
+            </div>
           )}
 
           <div className="flex flex-col items-center gap-6 py-8 opacity-40">
