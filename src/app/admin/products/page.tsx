@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { useProducts } from "@/context/products-context";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Edit3, Trash2, Wand2, Loader2, AlertCircle } from "lucide-react";
+import { Plus, Search, Edit3, Trash2, Wand2, Loader2, AlertCircle, X, CheckCircle2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { 
@@ -36,9 +36,23 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { generateProductDescription } from "@/ai/flows/admin-ai-product-description-generation";
 import { useToast } from "@/hooks/use-toast";
 import { StreamingService } from "@/lib/types";
+
+const LOGO_OPTIONS = [
+  { id: 'netflix', name: 'Netflix' },
+  { id: 'disney', name: 'Disney+' },
+  { id: 'max', name: 'HBO Max' },
+  { id: 'prime', name: 'Prime Video' },
+];
 
 export default function AdminProductsPage() {
   const { products, addProduct, deleteProduct } = useProducts();
@@ -47,11 +61,14 @@ export default function AdminProductsPage() {
   const [productToDelete, setProductToDelete] = useState<StreamingService | null>(null);
   const { toast } = useToast();
 
+  const [newFeature, setNewFeature] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     price: "",
     description: "",
-    stock: ""
+    stock: "",
+    logoId: "netflix",
+    features: [] as string[]
   });
 
   const handleAiGenerate = async () => {
@@ -74,6 +91,23 @@ export default function AdminProductsPage() {
     }
   };
 
+  const addFeature = () => {
+    if (newFeature.trim()) {
+      setFormData({
+        ...formData,
+        features: [...formData.features, newFeature.trim()]
+      });
+      setNewFeature("");
+    }
+  };
+
+  const removeFeature = (index: number) => {
+    setFormData({
+      ...formData,
+      features: formData.features.filter((_, i) => i !== index)
+    });
+  };
+
   const handleSaveProduct = () => {
     if (!formData.name || !formData.price || !formData.stock) {
       toast({ 
@@ -90,15 +124,16 @@ export default function AdminProductsPage() {
       price: parseFloat(formData.price),
       description: formData.description,
       stock: parseInt(formData.stock),
-      features: ["Acesso imediato", "Suporte 24h"],
-      logoId: "netflix",
+      features: formData.features.length > 0 ? formData.features : ["Acesso imediato", "Suporte 24h"],
+      logoId: formData.logoId,
       active: true,
     };
 
     addProduct(newProduct);
     toast({ title: "Produto Salvo", description: `${formData.name} foi adicionado com sucesso.` });
     setIsAdding(false);
-    setFormData({ name: "", price: "", description: "", stock: "" });
+    setFormData({ name: "", price: "", description: "", stock: "", logoId: "netflix", features: [] });
+    setNewFeature("");
   };
 
   const confirmDelete = (product: StreamingService) => {
@@ -132,21 +167,40 @@ export default function AdminProductsPage() {
               Novo Produto
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px] bg-card border-border rounded-[2rem]">
+          <DialogContent className="sm:max-w-[550px] bg-card border-border rounded-[2rem] max-h-[90vh] overflow-y-auto no-scrollbar">
             <DialogHeader>
               <DialogTitle className="font-headline text-2xl uppercase tracking-tight">Novo Serviço</DialogTitle>
             </DialogHeader>
             <div className="grid gap-6 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Nome do Serviço</Label>
-                <Input 
-                  id="name" 
-                  placeholder="Ex: Netflix Premium 4K" 
-                  className="bg-background border-border h-12 rounded-xl"
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Nome do Serviço</Label>
+                  <Input 
+                    id="name" 
+                    placeholder="Ex: Netflix Premium 4K" 
+                    className="bg-background border-border h-12 rounded-xl"
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="logo" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Ícone / Logo</Label>
+                  <Select 
+                    value={formData.logoId} 
+                    onValueChange={(val) => setFormData({...formData, logoId: val})}
+                  >
+                    <SelectTrigger className="bg-background border-border h-12 rounded-xl">
+                      <SelectValue placeholder="Selecione o logo" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-card border-border">
+                      {LOGO_OPTIONS.map(opt => (
+                        <SelectItem key={opt.id} value={opt.id}>{opt.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="price" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Preço (R$)</Label>
@@ -171,6 +225,49 @@ export default function AdminProductsPage() {
                   />
                 </div>
               </div>
+
+              <div className="space-y-3">
+                <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Vantagens do Produto</Label>
+                <div className="flex gap-2">
+                  <Input 
+                    placeholder="Ex: 4 Telas simultâneas" 
+                    className="bg-background border-border h-12 rounded-xl flex-1"
+                    value={newFeature}
+                    onChange={(e) => setNewFeature(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && addFeature()}
+                  />
+                  <Button 
+                    type="button" 
+                    onClick={addFeature}
+                    className="h-12 w-12 rounded-xl bg-primary hover:bg-primary/90"
+                  >
+                    <Plus className="w-5 h-5" />
+                  </Button>
+                </div>
+                
+                <div className="space-y-2 mt-2">
+                  {formData.features.map((feature, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-3 bg-background border border-border rounded-xl">
+                      <div className="flex items-center gap-3">
+                        <CheckCircle2 className="w-4 h-4 text-primary" />
+                        <span className="text-sm font-medium">{feature}</span>
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8 text-muted-foreground hover:text-red-500"
+                        onClick={() => removeFeature(idx)}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  {formData.features.length === 0 && (
+                    <p className="text-[10px] text-muted-foreground italic text-center py-2">Nenhuma vantagem adicionada. Usaremos as padrões.</p>
+                  )}
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="description" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Descrição</Label>
@@ -187,7 +284,7 @@ export default function AdminProductsPage() {
                 </div>
                 <Textarea 
                   id="description" 
-                  rows={4} 
+                  rows={3} 
                   placeholder="Descreva as vantagens do serviço..." 
                   className="bg-background border-border rounded-xl resize-none"
                   value={formData.description}
@@ -195,9 +292,9 @@ export default function AdminProductsPage() {
                 />
               </div>
             </div>
-            <DialogFooter className="gap-2">
-              <Button variant="outline" className="rounded-xl h-12 font-bold" onClick={() => setIsAdding(false)}>CANCELAR</Button>
-              <Button className="bg-primary hover:bg-primary/90 font-bold rounded-xl h-12 px-8" onClick={handleSaveProduct}>SALVAR PRODUTO</Button>
+            <DialogFooter className="gap-2 pb-4">
+              <Button variant="outline" className="rounded-xl h-12 font-bold flex-1" onClick={() => setIsAdding(false)}>CANCELAR</Button>
+              <Button className="bg-primary hover:bg-primary/90 font-bold rounded-xl h-12 px-8 flex-1" onClick={handleSaveProduct}>SALVAR PRODUTO</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -218,7 +315,12 @@ export default function AdminProductsPage() {
             <TableBody>
               {products.map((product) => (
                 <TableRow key={product.id} className="border-border hover:bg-muted/30 transition-colors">
-                  <TableCell className="font-bold py-6">{product.name}</TableCell>
+                  <TableCell className="font-bold py-6">
+                    <div className="flex flex-col">
+                      <span>{product.name}</span>
+                      <span className="text-[10px] text-muted-foreground uppercase font-normal">{product.logoId}</span>
+                    </div>
+                  </TableCell>
                   <TableCell className="font-bold text-primary">R$ {product.price.toFixed(2)}</TableCell>
                   <TableCell>
                     <span className={product.stock < 10 ? "text-red-500 font-bold" : "font-medium"}>
