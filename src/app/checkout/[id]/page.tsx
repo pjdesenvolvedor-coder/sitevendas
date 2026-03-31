@@ -48,7 +48,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
     if (initialProduct && selectedProducts.length === 0) {
       setSelectedProducts([initialProduct]);
     }
-  }, [products, resolvedParams.id]);
+  }, [products, resolvedParams.id, selectedProducts.length]);
 
   if (selectedProducts.length === 0 && products.length > 0) {
     const p = products.find(p => p.id === resolvedParams.id);
@@ -138,8 +138,8 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
           <div className="flex justify-center">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="default" className="bg-primary hover:bg-primary/90 text-white font-bold h-12 px-8 rounded-xl uppercase tracking-widest gap-2">
-                  <Plus className="w-5 h-5" />
+                <Button variant="default" className="bg-primary hover:bg-primary/90 text-white font-bold h-10 px-6 rounded-xl text-xs uppercase tracking-widest gap-2">
+                  <Plus className="w-4 h-4" />
                   Adicionar Produto
                   <ChevronDown className="w-4 h-4 ml-1 opacity-50" />
                 </Button>
