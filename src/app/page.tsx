@@ -19,6 +19,13 @@ export default function Home() {
   const categories = ['Netflix', 'Disney+', 'HBO Max', 'Prime Video', 'Star+', 'GloboPlay', 'Apple TV+'];
   const tickerItems = [...categories, ...categories];
 
+  const scrollToProducts = () => {
+    const element = document.getElementById('produtos');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground overflow-x-hidden">
       <Navbar />
@@ -49,7 +56,11 @@ export default function Home() {
             Acesso instantâneo às melhores plataformas do mundo. Sem burocracia e com a confiança da <span className="pj-text">PJ</span> <span className="contas-text">CONTAS</span>.
           </p>
           <div className="flex flex-col gap-4 px-6 sm:flex-row sm:justify-center">
-            <Button size="lg" className="bg-primary hover:bg-primary/90 w-full sm:w-auto h-16 text-xl rounded-2xl font-bold shadow-2xl shadow-primary/30 uppercase tracking-widest">
+            <Button 
+              size="lg" 
+              className="bg-primary hover:bg-primary/90 w-full sm:w-auto h-16 text-xl rounded-2xl font-bold shadow-2xl shadow-primary/30 uppercase tracking-widest"
+              onClick={scrollToProducts}
+            >
               Ver Catálogo
             </Button>
             <Button size="lg" variant="outline" className="w-full sm:w-auto h-16 text-xl rounded-2xl font-bold border-white/10 bg-white/5 hover:bg-white/10 uppercase tracking-widest">
@@ -149,7 +160,11 @@ export default function Home() {
             <p className="text-lg text-muted-foreground mb-10 max-w-sm mx-auto">
               O maior catálogo do mundo na palma da sua mão. Escolha <span className="pj-text">PJ</span> <span className="contas-text">CONTAS</span>.
             </p>
-            <Button size="lg" className="bg-primary hover:bg-primary/90 w-full max-w-xs h-16 text-xl rounded-2xl font-bold shadow-2xl shadow-primary/30 uppercase tracking-widest">
+            <Button 
+              size="lg" 
+              className="bg-primary hover:bg-primary/90 w-full max-w-xs h-16 text-xl rounded-2xl font-bold shadow-2xl shadow-primary/30 uppercase tracking-widest"
+              onClick={scrollToProducts}
+            >
               COMEÇAR AGORA
             </Button>
           </div>
