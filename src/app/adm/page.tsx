@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -48,7 +49,7 @@ export default function AdminLoginPage() {
           <div className="relative w-16 h-16 mx-auto mb-6">
             <Image src={logoImg} alt="Logo" fill className="object-contain" />
           </div>
-          <CardTitle className="text-3xl font-headline tracking-tight">
+          <CardTitle className="text-3xl font-headline tracking-normal">
             <span className="text-primary">PJ</span> <span className="text-white">CONTAS</span>
           </CardTitle>
           <p className="text-xs text-muted-foreground uppercase tracking-widest font-bold mt-2">Área Restrita</p>

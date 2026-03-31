@@ -33,7 +33,7 @@ export default function Home() {
             className="object-cover scale-110"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-background via-background/80 to-background"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-background via-background/60 to-background"></div>
         </div>
         
         <div className="container mx-auto px-6 text-center">
@@ -41,7 +41,7 @@ export default function Home() {
             <Star className="w-3 h-3 mr-2 fill-primary" />
             LÍDER EM ENTRETENIMENTO PREMIUM
           </Badge>
-          <h1 className="text-5xl sm:text-7xl md:text-8xl font-headline font-bold mb-6 leading-[0.9] tracking-tight">
+          <h1 className="text-5xl sm:text-7xl md:text-8xl font-headline font-bold mb-6 leading-[0.9] tracking-normal">
             STREAMING SEM <br />
             <span className="text-primary italic">LIMITES.</span>
           </h1>
@@ -78,7 +78,7 @@ export default function Home() {
       {/* Product Grid */}
       <section id="produtos" className="py-16 container mx-auto px-6">
         <div className="mb-12 text-center md:text-left">
-          <h2 className="text-4xl md:text-5xl font-headline font-bold mb-4 uppercase tracking-tighter">Plataformas Disponíveis</h2>
+          <h2 className="text-4xl md:text-5xl font-headline font-bold mb-4 uppercase tracking-normal">Plataformas Disponíveis</h2>
           <div className="w-20 h-1 bg-primary mb-4 mx-auto md:mx-0"></div>
           <p className="text-base text-muted-foreground max-w-md">
             Escolha seu serviço favorito e receba os dados de acesso imediato na <span className="pj-text">PJ</span> <span className="contas-text">CONTAS</span>.
@@ -99,7 +99,7 @@ export default function Home() {
                         className="object-cover transition-transform duration-700 group-hover:scale-110 opacity-100"
                       />
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-card/80 via-transparent to-transparent"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-card/40 via-transparent to-transparent"></div>
                     <div className="absolute top-6 right-6">
                       <Badge className="bg-primary text-white border-none font-bold py-1 px-4 text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20">POPULAR</Badge>
                     </div>
@@ -110,7 +110,7 @@ export default function Home() {
                     <div className="p-2 rounded-xl bg-primary/10">
                       <Tv className="w-6 h-6 text-primary" />
                     </div>
-                    <CardTitle className="text-3xl font-headline uppercase tracking-tight">{product.name}</CardTitle>
+                    <CardTitle className="text-3xl font-headline uppercase tracking-normal">{product.name}</CardTitle>
                   </div>
                   <ul className="space-y-3 mb-8">
                     {product.features.map((feature, i) => (
@@ -145,7 +145,7 @@ export default function Home() {
           <div className="absolute -top-20 -right-20 w-60 h-60 bg-primary/10 blur-[80px] rounded-full"></div>
           <div className="relative z-10">
             <Zap className="w-14 h-14 text-primary mx-auto mb-6 animate-bounce" />
-            <h2 className="text-4xl md:text-5xl font-headline font-bold mb-6 uppercase tracking-tight">Pronto para maratonar?</h2>
+            <h2 className="text-4xl md:text-5xl font-headline font-bold mb-6 uppercase tracking-normal">Pronto para maratonar?</h2>
             <p className="text-lg text-muted-foreground mb-10 max-w-sm mx-auto">
               O maior catálogo do mundo na palma da sua mão. Escolha <span className="pj-text">PJ</span> <span className="contas-text">CONTAS</span>.
             </p>
@@ -162,7 +162,7 @@ export default function Home() {
             <div className="relative w-8 h-8">
               <Image src={logoImg} alt="PJ CONTAS Logo" fill className="object-contain" />
             </div>
-            <span className="text-2xl font-headline font-bold tracking-tight">
+            <span className="text-2xl font-headline font-bold tracking-normal">
               <span className="pj-text">PJ</span> <span className="contas-text">CONTAS</span>
             </span>
           </div>

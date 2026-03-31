@@ -149,7 +149,7 @@ export default function AdminProductsPage() {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-headline font-bold mb-2">Produtos</h1>
+          <h1 className="text-3xl font-headline font-bold mb-2 tracking-normal">Produtos</h1>
           <p className="text-muted-foreground">Arraste os cards para organizar a ordem na vitrine.</p>
         </div>
 
@@ -162,7 +162,7 @@ export default function AdminProductsPage() {
           </DialogTrigger>
           <DialogContent className="sm:max-w-[550px] bg-card border-border rounded-[2rem] max-h-[90vh] overflow-y-auto no-scrollbar">
             <DialogHeader>
-              <DialogTitle className="font-headline text-2xl uppercase tracking-tight">Novo Serviço</DialogTitle>
+              <DialogTitle className="font-headline text-2xl uppercase tracking-normal">Novo Serviço</DialogTitle>
             </DialogHeader>
             <div className="grid gap-6 py-4">
               <div className="space-y-2">
@@ -407,7 +407,7 @@ export default function AdminProductsPage() {
             <div className="mx-auto w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center mb-4">
               <AlertCircle className="w-6 h-6 text-red-500" />
             </div>
-            <AlertDialogTitle className="font-headline text-2xl text-center uppercase">Confirmar Exclusão</AlertDialogTitle>
+            <AlertDialogTitle className="font-headline text-2xl text-center uppercase tracking-normal">Confirmar Exclusão</AlertDialogTitle>
             <AlertDialogDescription className="text-center text-muted-foreground">
               Deseja excluir <strong>{productToDelete?.name}</strong>?
             </AlertDialogDescription>

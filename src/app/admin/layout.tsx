@@ -63,7 +63,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="relative w-8 h-8">
           <Image src={logoImg} alt="Logo" fill className="object-contain" />
         </div>
-        <span className="text-2xl font-headline font-bold tracking-tight">
+        <span className="text-2xl font-headline font-bold tracking-normal">
           <span className="text-primary">PJ</span> <span className="text-white">CONTAS</span>
         </span>
       </div>
