@@ -131,6 +131,7 @@ export default function Home() {
                         <div className="flex items-baseline gap-2">
                           <span className="text-[10px] text-primary font-bold uppercase tracking-widest">Por:</span>
                           <span className="text-3xl font-headline font-bold text-white">R$ {product.price.toFixed(2)}</span>
+                          <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">/ MÊS</span>
                         </div>
                       </div>
                       {hasStock ? (

@@ -117,11 +117,12 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
                   <div className="flex justify-between items-center gap-4">
                     <div className="flex-1 min-w-0">
                       <h2 className="font-headline text-xl text-white truncate">{product.name}</h2>
-                      <p className="text-[10px] text-primary font-bold uppercase tracking-[0.2em]">Entrega Imediata</p>
+                      <p className="text-[10px] text-primary font-bold uppercase tracking-[0.2em]">Entrega Imediata • Assinatura Mensal</p>
                     </div>
                     <div className="flex items-center gap-4 shrink-0">
                       <div className="text-right">
                         <span className="text-xl font-headline font-bold text-primary">R$ {product.price.toFixed(2)}</span>
+                        <p className="text-[8px] text-muted-foreground uppercase font-bold">por mês</p>
                       </div>
                       {selectedProducts.length > 1 && (
                         <Button 
@@ -156,7 +157,10 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
                     className="flex justify-between items-center p-3 rounded-lg cursor-pointer hover:bg-primary/10 group"
                     onClick={() => handleAddProduct(product)}
                   >
-                    <span className="font-bold text-sm text-white group-hover:text-primary">{product.name}</span>
+                    <div className="flex flex-col">
+                      <span className="font-bold text-sm text-white group-hover:text-primary">{product.name}</span>
+                      <span className="text-[8px] text-muted-foreground uppercase font-bold">Assinatura Mensal</span>
+                    </div>
                     <span className="text-xs font-bold text-primary">R$ {product.price.toFixed(2)}</span>
                   </DropdownMenuItem>
                 ))}
@@ -168,7 +172,10 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
           </div>
 
           <div className="bg-card/30 border border-white/5 p-6 rounded-2xl flex justify-between items-center">
-            <span className="font-headline text-xl text-muted-foreground uppercase tracking-widest">Valor Total</span>
+            <div className="flex flex-col">
+              <span className="font-headline text-xl text-muted-foreground uppercase tracking-widest">Valor Total</span>
+              <span className="text-[10px] text-primary font-bold uppercase">Pagamento Recorrente Mensal</span>
+            </div>
             <span className="font-headline text-4xl text-primary">R$ {totalValue.toFixed(2)}</span>
           </div>
 

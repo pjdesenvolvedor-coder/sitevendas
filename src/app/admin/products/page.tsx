@@ -184,7 +184,7 @@ export default function AdminProductsPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-headline font-bold mb-2 tracking-normal">Produtos</h1>
-          <p className="text-muted-foreground">Arraste os cards para organizar a ordem na vitrine.</p>
+          <p className="text-muted-foreground">Gerencie seus serviços. Todas as assinaturas são mensais.</p>
         </div>
 
         <Dialog open={isAdding} onOpenChange={setIsAdding}>
@@ -196,7 +196,7 @@ export default function AdminProductsPage() {
           </DialogTrigger>
           <DialogContent className="sm:max-w-[550px] bg-card border-border rounded-[2rem] max-h-[90vh] overflow-y-auto no-scrollbar">
             <DialogHeader>
-              <DialogTitle className="font-headline text-2xl uppercase tracking-normal">Novo Serviço</DialogTitle>
+              <DialogTitle className="font-headline text-2xl uppercase tracking-normal">Novo Serviço Mensal</DialogTitle>
             </DialogHeader>
             <div className="grid gap-6 py-4">
               <div className="flex items-center justify-between p-4 bg-primary/5 rounded-xl border border-primary/20">
@@ -221,7 +221,7 @@ export default function AdminProductsPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Preço de Venda (R$)</Label>
+                  <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Preço Mensal (R$)</Label>
                   <Input type="number" placeholder="19.90" className="bg-background border-border h-12 rounded-xl" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} />
                 </div>
                 {formData.isPromotion && (
@@ -301,7 +301,7 @@ export default function AdminProductsPage() {
                                 <div className="flex flex-col text-right">
                                   <div className="flex items-center gap-2 justify-end">
                                     {product.originalPrice && <span className="text-[10px] text-muted-foreground line-through">R$ {product.originalPrice.toFixed(2)}</span>}
-                                    <span className="font-bold text-primary text-sm">R$ {product.price.toFixed(2)}</span>
+                                    <span className="font-bold text-primary text-sm">R$ {product.price.toFixed(2)}/mês</span>
                                   </div>
                                   <span className={`text-[10px] ${product.stock < 2 ? 'text-red-500 font-bold' : 'text-muted-foreground'}`}>{product.stock} un.</span>
                                 </div>
@@ -365,7 +365,7 @@ export default function AdminProductsPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Preço de Venda (R$)</Label>
+                <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Preço Mensal (R$)</Label>
                 <Input type="number" className="bg-background border-border h-12 rounded-xl" value={editFormData.price} onChange={(e) => setEditFormData({...editFormData, price: e.target.value})} />
               </div>
               {editFormData.isPromotion && (
