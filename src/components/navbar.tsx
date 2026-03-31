@@ -3,7 +3,6 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 export function Navbar() {
@@ -26,12 +25,6 @@ export function Navbar() {
             <span className="text-primary">PJ</span> <span className="text-white">CONTAS</span>
           </span>
         </Link>
-
-        <div className="flex items-center gap-3">
-          <Button size="sm" className="bg-primary hover:bg-primary/90 text-white font-bold h-10 px-6 rounded-xl text-[10px] shadow-xl shadow-primary/20 uppercase tracking-widest">
-            CATÁLOGO
-          </Button>
-        </div>
       </div>
     </nav>
   );
