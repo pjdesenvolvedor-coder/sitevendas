@@ -64,7 +64,6 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
       interval = setInterval(async () => {
         const result = await checkPixStatusAction(pixData.id);
         if (result.status === 'paid') {
-          // Consumir credenciais do estoque global
           const credentials: DeliveredCredential[] = selectedProducts.map(p => {
             const sold = sellCredential(p.id);
             return {
@@ -76,7 +75,6 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
             };
           });
           
-          // Criar registro do pedido
           const newOrder: Order = {
             id: `ORD-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
             customerName: formData.fullName,
@@ -258,7 +256,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
             <div className="bg-card/30 border border-white/5 p-6 rounded-2xl flex justify-between items-center">
               <div className="flex flex-col">
                 <span className="font-headline text-xl text-muted-foreground uppercase tracking-widest">Valor Total</span>
-                <span className="text-[10px] text-primary font-bold uppercase">Pagamento Único (Mensalidade)</span>
+                <span className="text-[10px] text-primary font-bold uppercase">PAGAMENTO MENSAL</span>
               </div>
               <span className="font-headline text-4xl text-primary">R$ {totalValue.toFixed(2)}</span>
             </div>
@@ -326,7 +324,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
 
                   <Button 
                     type="submit" 
-                    className="w-full bg-primary hover:bg-primary/90 text-white font-bold h-16 text-lg rounded-2xl shadow-2xl shadow-primary/20 mt-6 uppercase tracking-widest"
+                    className="w-full bg-primary hover:bg-primary/90 text-white font-bold h-16 text-lg rounded-2xl shadow-2xl shadow-primary/30 mt-6 uppercase tracking-widest"
                     disabled={loading}
                   >
                     {loading ? (
