@@ -1,29 +1,40 @@
 'use server';
 
 /**
- * @fileOverview Ação de servidor para envio de webhooks, contornando CORS.
+ * @fileOverview Ação de servidor para envio de webhooks, contornando restrições de CORS do navegador.
  */
 
 export async function sendWebhookAction(url: string, payload: any) {
+  if (!url) return { success: false, error: 'URL do Webhook não configurada.' };
+
   try {
+    console.log(`[Webhook] Enviando requisição para: ${url}`);
+    
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'User-Agent': 'PJ-Contas-Webhook-Agent/1.0',
+        'Accept': 'application/json',
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        source: 'PJ-CONTAS-VENDAS',
+        timestamp: new Date().toISOString(),
+        data: payload
+      }),
+      // Garante que a requisição não seja cacheada e saia do servidor
+      cache: 'no-store',
     });
 
     if (!response.ok) {
-      const text = await response.text();
-      console.error(`Webhook failed with status ${response.status}: ${text}`);
-      return { success: false, status: response.status };
+      const errorText = await response.text();
+      console.error(`[Webhook] Erro no servidor de destino (${response.status}):`, errorText);
+      return { success: false, status: response.status, error: errorText };
     }
 
+    console.log('[Webhook] Sucesso! Dados enviados com sucesso.');
     return { success: true };
   } catch (error: any) {
-    console.error("Webhook Error:", error.message);
+    console.error("[Webhook] Erro de conexão:", error.message);
     return { success: false, error: error.message };
   }
 }

@@ -167,15 +167,25 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
   const addOrder = (order: Order) => {
     setOrders((prev) => [order, ...prev]);
 
-    // Trigger Webhook via Server Action (avoids CORS issues)
+    // Dispara o Webhook se estiver ativo
     if (webhookSettings.enabled && webhookSettings.url) {
       const payload: any = {};
-      if (webhookSettings.fields.orderId) payload.orderId = order.id;
-      if (webhookSettings.fields.customerName) payload.customerName = order.customerName;
-      if (webhookSettings.fields.customerPhone) payload.customerPhone = order.customerPhone;
-      if (webhookSettings.fields.total) payload.totalValue = order.total;
-      if (webhookSettings.fields.items) payload.deliveredItems = order.items;
+      if (webhookSettings.fields.orderId) payload.order_id = order.id;
+      if (webhookSettings.fields.customerName) payload.customer_name = order.customerName;
+      if (webhookSettings.fields.customerPhone) payload.customer_phone = order.customerPhone;
+      if (webhookSettings.fields.total) payload.total_value = order.total;
+      
+      if (webhookSettings.fields.items) {
+        payload.items = order.items.map(item => ({
+          product_name: item.productName,
+          email: item.email,
+          password: item.pass,
+          screen_name: item.screen,
+          screen_password: item.screenPass || 'Sem senha'
+        }));
+      }
 
+      // Chama a Server Action para processar o envio
       sendWebhookAction(webhookSettings.url, payload);
     }
   };
