@@ -42,7 +42,6 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
     phone: ""
   });
 
-  // Inicializa com o produto do ID da URL
   useEffect(() => {
     const initialProduct = products.find(p => p.id === resolvedParams.id);
     if (initialProduct && selectedProducts.length === 0) {
@@ -109,14 +108,14 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
             {selectedProducts.map((product) => (
               <Card key={product.id} className="bg-primary/5 border-primary/20 rounded-2xl overflow-hidden border-dashed relative group">
                 <CardContent className="p-6">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h2 className="font-headline text-2xl text-white">{product.name}</h2>
+                  <div className="flex justify-between items-center gap-4">
+                    <div className="flex-1 min-w-0">
+                      <h2 className="font-headline text-xl text-white truncate">{product.name}</h2>
                       <p className="text-[10px] text-primary font-bold uppercase tracking-[0.2em]">Entrega Imediata</p>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4 shrink-0">
                       <div className="text-right">
-                        <span className="text-2xl font-headline font-bold text-primary">R$ {product.price.toFixed(2)}</span>
+                        <span className="text-xl font-headline font-bold text-primary">R$ {product.price.toFixed(2)}</span>
                       </div>
                       {selectedProducts.length > 1 && (
                         <Button 
