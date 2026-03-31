@@ -55,7 +55,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Ticker Section - Categorias (O que você pediu) */}
+      {/* Ticker Section - Categorias */}
       <section className="py-12 bg-card/20 border-y border-white/5 relative overflow-hidden">
         {/* Glow central estático para destacar os itens que passam no meio */}
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-20 bg-primary/20 blur-[60px] pointer-events-none rounded-full z-0"></div>
@@ -97,7 +97,7 @@ export default function Home() {
           <h2 className="text-4xl md:text-5xl font-headline font-bold mb-4 uppercase tracking-tighter">Plataformas Disponíveis</h2>
           <div className="w-20 h-1 bg-primary mb-4 mx-auto md:mx-0"></div>
           <p className="text-base text-muted-foreground max-w-md">
-            Escolha seu serviço favorito e receba os dados de acesso em segundos na <span className="pj-text">PJ</span> <span className="contas-text">CONTAS</span>.
+            Escolha seu serviço favorito e receba os dados de acesso imediato na <span className="pj-text">PJ</span> <span className="contas-text">CONTAS</span>.
           </p>
         </div>
 
