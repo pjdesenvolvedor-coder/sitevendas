@@ -151,8 +151,8 @@ export default function Home() {
                         </Button>
                       </Link>
                     ) : (
-                      <Button disabled className="bg-muted/50 text-muted-foreground w-full h-16 text-lg rounded-2xl font-bold gap-3 cursor-not-allowed uppercase tracking-[0.1em] border border-white/5">
-                        <Ban className="w-5 h-5" />
+                      <Button disabled className="bg-muted/50 text-primary w-full h-16 text-lg rounded-2xl font-bold gap-3 cursor-not-allowed uppercase tracking-[0.1em] border border-white/5">
+                        <Ban className="w-5 h-5 text-primary" />
                         SEM ESTOQUE
                       </Button>
                     )}
