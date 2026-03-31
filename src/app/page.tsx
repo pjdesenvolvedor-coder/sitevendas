@@ -31,7 +31,7 @@ export default function Home() {
       <Navbar />
       
       {/* Hero Section */}
-      <section className="relative pt-24 pb-4 overflow-hidden flex items-center">
+      <section className="relative pt-24 pb-12 overflow-hidden flex items-center">
         <div className="absolute inset-0 -z-10 opacity-40">
           <Image 
             src={heroImg} 
