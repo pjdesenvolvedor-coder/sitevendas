@@ -264,17 +264,19 @@ export default function AdminProductsPage() {
                               <div 
                                 ref={provided.innerRef}
                                 {...provided.draggableProps}
+                                {...provided.dragHandleProps}
                                 style={{
                                   ...provided.draggableProps.style,
                                   left: snapshot.isDragging ? provided.draggableProps.style?.left : 'auto',
+                                  width: snapshot.isDragging ? '100%' : 'auto',
                                 }}
                                 className={cn(
                                   "flex items-center justify-between p-3 bg-background border border-border rounded-xl transition-shadow",
-                                  snapshot.isDragging && "shadow-2xl border-primary ring-2 ring-primary/20 z-50 bg-card"
+                                  snapshot.isDragging && "shadow-2xl border-primary ring-2 ring-primary/20 z-[9999] bg-card"
                                 )}
                               >
                                 <div className="flex items-center gap-3 flex-1">
-                                  <div {...provided.dragHandleProps} className="text-muted-foreground px-1 cursor-grab active:cursor-grabbing">
+                                  <div className="text-muted-foreground px-1 cursor-grab active:cursor-grabbing">
                                     <GripVertical className="w-4 h-4" />
                                   </div>
                                   <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
@@ -348,13 +350,14 @@ export default function AdminProductsPage() {
                     <div
                       ref={provided.innerRef}
                       {...provided.draggableProps}
+                      {...provided.dragHandleProps}
                       style={{
                         ...provided.draggableProps.style,
                         left: snapshot.isDragging ? provided.draggableProps.style?.left : 'auto',
                       }}
                       className={cn(
                         "rounded-2xl transition-all",
-                        snapshot.isDragging && "z-50 scale-[1.02]"
+                        snapshot.isDragging && "z-[9999] scale-[1.02]"
                       )}
                     >
                       <Card className={cn(
@@ -363,7 +366,7 @@ export default function AdminProductsPage() {
                       )}>
                         <CardContent className="p-4">
                           <div className="flex items-center gap-4">
-                            <div {...provided.dragHandleProps} className="text-muted-foreground cursor-grab active:cursor-grabbing p-2">
+                            <div className="text-muted-foreground cursor-grab active:cursor-grabbing p-2">
                               <GripVertical className="w-5 h-5" />
                             </div>
                             
