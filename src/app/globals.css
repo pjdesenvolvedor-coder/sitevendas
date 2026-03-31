@@ -37,6 +37,17 @@
   h1, h2, h3, h4, h5, h6 {
     @apply font-headline;
   }
+
+  /* Remove setas de inputs de número */
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type=number] {
+    -moz-appearance: textfield;
+  }
 }
 
 /* Animação do Letreiro Infinito */
