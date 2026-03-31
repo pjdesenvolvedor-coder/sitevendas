@@ -96,10 +96,10 @@ export default function Home() {
                         src={product.imageUrl} 
                         alt={product.name} 
                         fill 
-                        className="object-cover transition-transform duration-700 group-hover:scale-110 opacity-70 group-hover:opacity-100"
+                        className="object-cover transition-transform duration-700 group-hover:scale-110 opacity-100"
                       />
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-card via-card/40 to-transparent"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-card/80 via-transparent to-transparent"></div>
                     <div className="absolute top-6 right-6">
                       <Badge className="bg-primary text-white border-none font-bold py-1 px-4 text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20">POPULAR</Badge>
                     </div>
