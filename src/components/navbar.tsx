@@ -1,20 +1,28 @@
-
 "use client";
 
 import Link from "next/link";
-import { Tv, UserCog } from "lucide-react";
+import Image from "next/image";
+import { UserCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 export function Navbar() {
+  const logoImg = PlaceHolderImages.find(img => img.id === 'logo')?.imageUrl || '';
+
   return (
     <nav className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-lg border-b border-border/50 h-16">
       <div className="container mx-auto px-6 h-full flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="p-1.5 rounded-lg bg-primary/10 transition-colors">
-            <Tv className="w-5 h-5 text-primary" />
+          <div className="relative w-8 h-8">
+            <Image 
+              src={logoImg} 
+              alt="PJ CONTAS" 
+              fill 
+              className="object-contain"
+            />
           </div>
-          <span className="text-xl font-headline font-bold tracking-tight">
-            STREAM<span className="text-primary italic">PULSAR</span>
+          <span className="text-2xl font-headline font-bold tracking-tight">
+            <span className="text-primary">PJ</span> <span className="text-white">CONTAS</span>
           </span>
         </Link>
 

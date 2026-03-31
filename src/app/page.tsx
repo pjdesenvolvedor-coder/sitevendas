@@ -1,22 +1,22 @@
-
 import Image from "next/image";
 import Link from "next/link";
 import { Navbar } from "@/components/navbar";
 import { INITIAL_PRODUCTS } from "@/lib/mock-data";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Star, Zap, ShoppingCart, Tv } from "lucide-react";
 
 export default function Home() {
   const heroImg = PlaceHolderImages.find(img => img.id === 'hero')?.imageUrl || '';
+  const logoImg = PlaceHolderImages.find(img => img.id === 'logo')?.imageUrl || '';
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground overflow-x-hidden">
       <Navbar />
       
-      {/* Hero Section - Otimizada para Mobile */}
+      {/* Hero Section */}
       <section className="relative pt-24 pb-12 overflow-hidden flex items-center min-h-[85vh]">
         <div className="absolute inset-0 -z-10 opacity-30">
           <Image 
@@ -39,7 +39,7 @@ export default function Home() {
             <span className="text-primary italic">FRONTEIRAS.</span>
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground mb-8 max-w-md mx-auto font-body leading-relaxed">
-            Acesso instantâneo às melhores plataformas do mundo. Sem burocracia, preço baixo e entrega imediata no seu WhatsApp ou e-mail.
+            Acesso instantâneo às melhores plataformas do mundo. Sem burocracia, preço baixo e entrega imediata na <span className="text-primary font-bold">PJ CONTAS</span>.
           </p>
           <div className="flex flex-col gap-3 px-4 sm:flex-row sm:justify-center">
             <Button size="lg" className="bg-primary hover:bg-primary/90 w-full sm:w-auto h-14 text-lg rounded-xl font-bold shadow-lg shadow-primary/20">
@@ -52,7 +52,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Stats - Compacto para Mobile */}
+      {/* Stats */}
       <section className="py-8 border-y border-border/50 bg-card/30">
         <div className="container mx-auto px-4 grid grid-cols-2 gap-y-6 md:grid-cols-4">
           {[
@@ -81,7 +81,7 @@ export default function Home() {
       {/* Product Grid */}
       <section id="produtos" className="py-8 container mx-auto px-6">
         <div className="mb-8">
-          <h2 className="text-3xl font-headline font-bold mb-2">Plataformas</h2>
+          <h2 className="text-3xl font-headline font-bold mb-2 uppercase">Plataformas</h2>
           <p className="text-sm text-muted-foreground">
             Escolha seu serviço e comece a assistir agora.
           </p>
@@ -107,7 +107,7 @@ export default function Home() {
                   </div>
                 </CardHeader>
                 <CardContent className="p-6">
-                  <CardTitle className="text-2xl font-headline mb-3">{product.name}</CardTitle>
+                  <CardTitle className="text-2xl font-headline mb-3 uppercase">{product.name}</CardTitle>
                   <ul className="space-y-2 mb-6">
                     {product.features.slice(0, 3).map((feature, i) => (
                       <li key={i} className="flex items-center text-xs gap-2 text-muted-foreground">
@@ -140,7 +140,7 @@ export default function Home() {
         <div className="bg-primary/5 border border-primary/20 rounded-[32px] p-10 text-center relative overflow-hidden">
           <div className="relative z-10">
             <Zap className="w-10 h-10 text-primary mx-auto mb-4" />
-            <h2 className="text-3xl font-headline font-bold mb-4">Acesso Imediato?</h2>
+            <h2 className="text-3xl font-headline font-bold mb-4 uppercase">Acesso Imediato?</h2>
             <p className="text-sm text-muted-foreground mb-8">
               Receba suas credenciais segundos após a confirmação do pagamento.
             </p>
@@ -154,13 +154,15 @@ export default function Home() {
       <footer className="py-12 bg-card/20 border-t border-border/50 px-6">
         <div className="container mx-auto flex flex-col items-center text-center gap-6">
           <div className="flex items-center gap-2">
-            <Tv className="w-5 h-5 text-primary" />
-            <span className="text-xl font-headline font-bold">
-              Stream<span className="text-primary italic">Pulsar</span>
+            <div className="relative w-6 h-6">
+              <Image src={logoImg} alt="PJ CONTAS Logo" fill className="object-contain" />
+            </div>
+            <span className="text-xl font-headline font-bold tracking-tight">
+              <span className="text-primary">PJ</span> <span className="text-white">CONTAS</span>
             </span>
           </div>
           <p className="text-xs text-muted-foreground max-w-xs">
-            © 2024 StreamPulsar. Todos os direitos reservados. Entretenimento acessível para todos.
+            © 2024 PJ CONTAS. Todos os direitos reservados. Entretenimento acessível para todos.
           </p>
           <div className="flex gap-4 text-[10px] uppercase font-bold tracking-widest opacity-60">
             <Link href="#" className="hover:text-primary">Termos</Link>

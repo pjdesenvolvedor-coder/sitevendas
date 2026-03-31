@@ -1,7 +1,7 @@
-
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { 
   LayoutDashboard, 
@@ -9,14 +9,13 @@ import {
   ShoppingBag, 
   Settings, 
   LogOut, 
-  Tv, 
-  PlusCircle,
   Menu
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 const NAV_ITEMS = [
   { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
@@ -28,12 +27,17 @@ const NAV_ITEMS = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const logoImg = PlaceHolderImages.find(img => img.id === 'logo')?.imageUrl || '';
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full bg-card border-r border-border">
       <div className="p-6 border-b border-border flex items-center gap-2">
-        <Tv className="w-6 h-6 text-primary" />
-        <span className="text-xl font-headline font-bold">Painel <span className="text-primary">ADM</span></span>
+        <div className="relative w-6 h-6">
+          <Image src={logoImg} alt="Logo" fill className="object-contain" />
+        </div>
+        <span className="text-xl font-headline font-bold">
+          <span className="text-primary">PJ</span> <span className="text-white">CONTAS</span>
+        </span>
       </div>
       
       <nav className="flex-1 p-4 space-y-2 mt-4">

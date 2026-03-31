@@ -1,6 +1,11 @@
-
 {
   "placeholderImages": [
+    {
+      "id": "logo",
+      "description": "PJ CONTAS Logo",
+      "imageUrl": "https://i.imgur.com/XsXK777.png",
+      "imageHint": "company logo"
+    },
     {
       "id": "netflix",
       "description": "Netflix Logo",
