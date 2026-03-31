@@ -31,7 +31,7 @@ export default function Home() {
       <Navbar />
       
       {/* Hero Section */}
-      <section className="relative pt-10 pb-16 overflow-hidden flex items-center min-h-[90vh]">
+      <section className="relative pt-10 pb-6 overflow-hidden flex items-center">
         <div className="absolute inset-0 -z-10 opacity-40">
           <Image 
             src={heroImg} 
@@ -71,7 +71,7 @@ export default function Home() {
       </section>
 
       {/* Ticker Section */}
-      <section className="py-12 bg-card/20 border-y border-white/5 relative overflow-hidden">
+      <section className="py-4 bg-card/20 border-y border-white/5 relative overflow-hidden">
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-20 bg-primary/20 blur-[60px] pointer-events-none rounded-full z-0"></div>
         <div className="ticker-container pointer-events-none">
           <div className="animate-marquee flex whitespace-nowrap">
