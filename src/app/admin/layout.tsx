@@ -11,7 +11,8 @@ import {
   Settings, 
   LogOut, 
   Menu,
-  Loader2
+  Loader2,
+  Boxes
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ import { PlaceHolderImages } from "@/lib/placeholder-images";
 const NAV_ITEMS = [
   { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { label: 'Produtos', href: '/admin/products', icon: Package },
+  { label: 'Estoque', href: '/admin/stock', icon: Boxes },
   { label: 'Pedidos', href: '/admin/orders', icon: ShoppingBag },
   { label: 'Configurações', href: '/admin/settings', icon: Settings },
 ];

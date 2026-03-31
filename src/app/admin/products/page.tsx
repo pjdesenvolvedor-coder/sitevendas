@@ -58,7 +58,6 @@ export default function AdminProductsPage() {
     name: "",
     price: "",
     description: "",
-    stock: "",
     imageUrl: "",
     features: [] as string[]
   });
@@ -118,10 +117,10 @@ export default function AdminProductsPage() {
   };
 
   const handleSaveProduct = () => {
-    if (!formData.name || !formData.price || !formData.stock || !formData.imageUrl) {
+    if (!formData.name || !formData.price || !formData.imageUrl) {
       toast({ 
         title: "Campos Incompletos", 
-        description: "Por favor, preencha nome, preço, estoque e URL da imagem.", 
+        description: "Por favor, preencha nome, preço e URL da imagem.", 
         variant: "destructive" 
       });
       return;
@@ -132,16 +131,16 @@ export default function AdminProductsPage() {
       name: formData.name,
       price: parseFloat(formData.price),
       description: formData.description,
-      stock: parseInt(formData.stock),
+      stock: 0, // Inicia com estoque zero
       features: formData.features.length > 0 ? formData.features : ["Acesso imediato", "Suporte 24h"],
       imageUrl: formData.imageUrl,
       active: true,
     };
 
     addProduct(newProduct);
-    toast({ title: "Produto Salvo", description: `${formData.name} foi adicionado com sucesso.` });
+    toast({ title: "Produto Salvo", description: `${formData.name} foi adicionado. Abasteça o estoque no menu Estoque.` });
     setIsAdding(false);
-    setFormData({ name: "", price: "", description: "", stock: "", imageUrl: "", features: [] });
+    setFormData({ name: "", price: "", description: "", imageUrl: "", features: [] });
     setNewFeature("");
   };
 
@@ -190,29 +189,16 @@ export default function AdminProductsPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="price" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Preço (R$)</Label>
-                  <Input 
-                    id="price" 
-                    type="number" 
-                    placeholder="19.90"
-                    className="bg-background border-border h-12 rounded-xl"
-                    value={formData.price}
-                    onChange={(e) => setFormData({...formData, price: e.target.value})}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="stock" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Estoque</Label>
-                  <Input 
-                    id="stock" 
-                    type="number" 
-                    placeholder="50"
-                    className="bg-background border-border h-12 rounded-xl"
-                    value={formData.stock}
-                    onChange={(e) => setFormData({...formData, stock: e.target.value})}
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="price" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Preço (R$)</Label>
+                <Input 
+                  id="price" 
+                  type="number" 
+                  placeholder="19.90"
+                  className="bg-background border-border h-12 rounded-xl"
+                  value={formData.price}
+                  onChange={(e) => setFormData({...formData, price: e.target.value})}
+                />
               </div>
 
               <div className="space-y-3">
