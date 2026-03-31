@@ -1,4 +1,3 @@
-
 "use client";
 
 import { use, useState, useEffect } from "react";
@@ -164,9 +163,10 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
   };
 
   const copyToClipboard = (text: string) => {
+    if (!text || text === "Pendente de envio") return;
     navigator.clipboard.writeText(text);
     setCopied(true);
-    toast({ title: "Copiado!", description: "Código copiado com sucesso." });
+    toast({ title: "Copiado!", description: "Informação copiada com sucesso." });
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -362,6 +362,11 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
                 </div>
 
                 <div className="w-full space-y-4">
+                  <div className="text-center">
+                    <p className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] mb-2">
+                      PIX -&gt; COPIA E COLA -&gt; PAGAR
+                    </p>
+                  </div>
                   <div className="space-y-2">
                     <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Código Copia e Cola</Label>
                     <div className="relative group">
@@ -378,9 +383,6 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
                   </div>
 
                   <div className="text-center">
-                    <p className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] mb-2">
-                      PIX -&gt; COPIA E COLA -&gt; PAGAR
-                    </p>
                     <Button 
                       onClick={() => copyToClipboard(pixData.qr_code)}
                       className="w-full h-14 bg-primary hover:bg-primary/90 font-bold uppercase tracking-widest rounded-xl text-xs gap-2"
@@ -405,6 +407,12 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
                 <h2 className="font-headline text-3xl text-white mb-1">PAGAMENTO APROVADO!</h2>
                 <p className="text-muted-foreground text-[10px] uppercase tracking-widest font-bold mb-8">Obrigado pela preferência.</p>
                 
+                <div className="mb-4 text-center">
+                  <span className="text-[10px] font-bold text-green-500 uppercase tracking-widest bg-green-500/10 px-4 py-1.5 rounded-full border border-green-500/20">
+                    CLIQUE NA INFORMAÇÃO PARA COPIAR
+                  </span>
+                </div>
+
                 <div className="space-y-4 text-left">
                   {purchasedCredentials.map((cred, idx) => (
                     <Card key={idx} className="bg-background/50 border-white/5 rounded-2xl overflow-hidden">
@@ -416,20 +424,26 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-1">
                             <Label className="text-[8px] uppercase text-muted-foreground font-bold">E-mail</Label>
-                            <div className="flex items-center gap-2 bg-black/20 p-2 rounded-lg text-xs font-mono break-all text-white relative group">
+                            <div 
+                              className="flex items-center gap-2 bg-black/20 p-2 rounded-lg text-xs font-mono break-all text-white relative group cursor-pointer hover:bg-black/40 transition-colors"
+                              onClick={() => copyToClipboard(cred.email)}
+                            >
                               <Mail className="w-3 h-3 shrink-0 text-primary" />
                               <span className="truncate">{cred.email}</span>
-                              <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity ml-auto" onClick={() => copyToClipboard(cred.email)}>
+                              <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity ml-auto">
                                 <Copy className="w-3 h-3" />
                               </Button>
                             </div>
                           </div>
                           <div className="space-y-1">
                             <Label className="text-[8px] uppercase text-muted-foreground font-bold">Senha</Label>
-                            <div className="flex items-center gap-2 bg-black/20 p-2 rounded-lg text-xs font-mono break-all text-white relative group">
+                            <div 
+                              className="flex items-center gap-2 bg-black/20 p-2 rounded-lg text-xs font-mono break-all text-white relative group cursor-pointer hover:bg-black/40 transition-colors"
+                              onClick={() => copyToClipboard(cred.pass)}
+                            >
                               <Lock className="w-3 h-3 shrink-0 text-primary" />
                               <span className="truncate">{cred.pass}</span>
-                              <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity ml-auto" onClick={() => copyToClipboard(cred.pass)}>
+                              <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity ml-auto">
                                 <Copy className="w-3 h-3" />
                               </Button>
                             </div>
@@ -438,14 +452,20 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-1">
                             <Label className="text-[8px] uppercase text-muted-foreground font-bold">Perfil / Tela</Label>
-                            <div className="flex items-center gap-2 bg-black/20 p-2 rounded-lg text-xs font-mono break-all text-white">
+                            <div 
+                              className="flex items-center gap-2 bg-black/20 p-2 rounded-lg text-xs font-mono break-all text-white cursor-pointer hover:bg-black/40 transition-colors"
+                              onClick={() => copyToClipboard(cred.screen)}
+                            >
                               <Monitor className="w-3 h-3 shrink-0 text-primary" />
                               <span className="truncate">{cred.screen}</span>
                             </div>
                           </div>
                           <div className="space-y-1">
                             <Label className="text-[8px] uppercase text-muted-foreground font-bold">Senha Perfil</Label>
-                            <div className="flex items-center gap-2 bg-black/20 p-2 rounded-lg text-xs font-mono break-all text-white">
+                            <div 
+                              className="flex items-center gap-2 bg-black/20 p-2 rounded-lg text-xs font-mono break-all text-white cursor-pointer hover:bg-black/40 transition-colors"
+                              onClick={() => copyToClipboard(cred.screenPass || "Sem Senha")}
+                            >
                               <Key className="w-3 h-3 shrink-0 text-primary" />
                               <span className="truncate">{cred.screenPass || "Sem Senha"}</span>
                             </div>
