@@ -49,6 +49,7 @@ import { generateProductDescription } from "@/ai/flows/admin-ai-product-descript
 import { useToast } from "@/hooks/use-toast";
 import { StreamingService } from "@/lib/types";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
+import { cn } from "@/lib/utils";
 
 const LOGO_OPTIONS = [
   { id: 'netflix', name: 'Netflix' },
@@ -259,14 +260,21 @@ export default function AdminProductsPage() {
                       >
                         {formData.features.map((feature, idx) => (
                           <Draggable key={`${feature}-${idx}`} draggableId={`${feature}-${idx}`} index={idx}>
-                            {(provided) => (
+                            {(provided, snapshot) => (
                               <div 
                                 ref={provided.innerRef}
                                 {...provided.draggableProps}
-                                className="flex items-center justify-between p-3 bg-background border border-border rounded-xl"
+                                style={{
+                                  ...provided.draggableProps.style,
+                                  left: snapshot.isDragging ? provided.draggableProps.style?.left : 'auto',
+                                }}
+                                className={cn(
+                                  "flex items-center justify-between p-3 bg-background border border-border rounded-xl transition-shadow",
+                                  snapshot.isDragging && "shadow-2xl border-primary ring-2 ring-primary/20 z-50 bg-card"
+                                )}
                               >
                                 <div className="flex items-center gap-3 flex-1">
-                                  <div {...provided.dragHandleProps} className="text-muted-foreground px-1">
+                                  <div {...provided.dragHandleProps} className="text-muted-foreground px-1 cursor-grab active:cursor-grabbing">
                                     <GripVertical className="w-4 h-4" />
                                   </div>
                                   <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
@@ -336,54 +344,66 @@ export default function AdminProductsPage() {
             >
               {products.map((product, idx) => (
                 <Draggable key={product.id} draggableId={product.id} index={idx}>
-                  {(provided) => (
-                    <Card 
+                  {(provided, snapshot) => (
+                    <div
                       ref={provided.innerRef}
                       {...provided.draggableProps}
-                      className="bg-card/50 border-border rounded-2xl overflow-hidden group"
+                      style={{
+                        ...provided.draggableProps.style,
+                        left: snapshot.isDragging ? provided.draggableProps.style?.left : 'auto',
+                      }}
+                      className={cn(
+                        "rounded-2xl transition-all",
+                        snapshot.isDragging && "z-50 scale-[1.02]"
+                      )}
                     >
-                      <CardContent className="p-4">
-                        <div className="flex items-center gap-4">
-                          <div {...provided.dragHandleProps} className="text-muted-foreground">
-                            <GripVertical className="w-5 h-5" />
-                          </div>
-                          
-                          <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                            <div className="flex items-center gap-3">
-                              <div className="p-2 rounded-lg bg-primary/10">
-                                <Tv className="w-5 h-5 text-primary" />
+                      <Card className={cn(
+                        "bg-card/50 border-border rounded-2xl overflow-hidden group transition-shadow",
+                        snapshot.isDragging && "shadow-2xl border-primary ring-2 ring-primary/20 bg-card"
+                      )}>
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-4">
+                            <div {...provided.dragHandleProps} className="text-muted-foreground cursor-grab active:cursor-grabbing p-2">
+                              <GripVertical className="w-5 h-5" />
+                            </div>
+                            
+                            <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                              <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-lg bg-primary/10">
+                                  <Tv className="w-5 h-5 text-primary" />
+                                </div>
+                                <div className="flex flex-col">
+                                  <span className="font-bold text-sm">{product.name}</span>
+                                  <span className="text-[10px] text-muted-foreground uppercase">{product.logoId}</span>
+                                </div>
                               </div>
-                              <div className="flex flex-col">
-                                <span className="font-bold text-sm">{product.name}</span>
-                                <span className="text-[10px] text-muted-foreground uppercase">{product.logoId}</span>
+
+                              <div className="flex items-center gap-6">
+                                <div className="flex flex-col text-right">
+                                  <span className="font-bold text-primary text-sm">R$ {product.price.toFixed(2)}</span>
+                                  <span className={`text-[10px] ${product.stock < 10 ? 'text-red-500 font-bold' : 'text-muted-foreground'}`}>
+                                    {product.stock} un.
+                                  </span>
+                                </div>
+
+                                <Badge className={product.active ? "bg-green-500/20 text-green-500 border-none" : "bg-muted text-muted-foreground"}>
+                                  {product.active ? "Ativo" : "Inativo"}
+                                </Badge>
+
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="h-10 w-10 text-muted-foreground hover:text-red-500 hover:bg-red-500/5 rounded-xl"
+                                  onClick={() => setProductToDelete(product)}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
                               </div>
                             </div>
-
-                            <div className="flex items-center gap-6">
-                              <div className="flex flex-col text-right">
-                                <span className="font-bold text-primary text-sm">R$ {product.price.toFixed(2)}</span>
-                                <span className={`text-[10px] ${product.stock < 10 ? 'text-red-500 font-bold' : 'text-muted-foreground'}`}>
-                                  {product.stock} un.
-                                </span>
-                              </div>
-
-                              <Badge className={product.active ? "bg-green-500/20 text-green-500 border-none" : "bg-muted text-muted-foreground"}>
-                                {product.active ? "Ativo" : "Inativo"}
-                              </Badge>
-
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="h-10 w-10 text-muted-foreground hover:text-red-500 hover:bg-red-500/5 rounded-xl"
-                                onClick={() => setProductToDelete(product)}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
                           </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                        </CardContent>
+                      </Card>
+                    </div>
                   )}
                 </Draggable>
               ))}
