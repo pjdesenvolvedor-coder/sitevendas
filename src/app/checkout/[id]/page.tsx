@@ -22,7 +22,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
   const [email, setEmail] = useState("");
 
   if (!product) {
-    return <div className="p-20 text-center">Produto não encontrado.</div>;
+    return <div className="p-20 text-center font-headline text-2xl">PRODUTO NÃO ENCONTRADO.</div>;
   }
 
   const handleCheckout = (e: React.FormEvent) => {
@@ -33,7 +33,6 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
     }
     
     setLoading(true);
-    // Simulate payment processing
     setTimeout(() => {
       setLoading(false);
       toast({ 
@@ -44,129 +43,103 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
   };
 
   return (
-    <div className="min-h-screen pt-24 pb-12">
+    <div className="min-h-screen pt-20 pb-12 bg-background">
       <Navbar />
-      <div className="container mx-auto px-4 max-w-5xl">
-        <Link href="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary mb-8 group">
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          Voltar para a loja
+      <div className="container mx-auto px-6 max-w-2xl">
+        <Link href="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary mb-6 text-sm font-bold uppercase tracking-widest">
+          <ArrowLeft className="w-4 h-4" />
+          Voltar
         </Link>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-6">
-            <Card className="bg-card/50 border-border">
-              <CardHeader>
-                <CardTitle className="font-headline text-2xl">Dados do Acesso</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleCheckout} className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="text-sm font-bold text-muted-foreground uppercase tracking-widest">
-                      E-mail para receber as credenciais
-                    </Label>
-                    <Input 
-                      id="email" 
-                      type="email" 
-                      placeholder="seu-email@exemplo.com"
-                      className="bg-background border-border py-6 text-lg"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Nós nunca compartilhamos seu e-mail. Ele será usado apenas para a entrega do produto.
-                    </p>
-                  </div>
-
-                  <Separator className="bg-border/50" />
-
-                  <div className="space-y-4">
-                    <Label className="text-sm font-bold text-muted-foreground uppercase tracking-widest">
-                      Método de Pagamento
-                    </Label>
-                    <RadioGroup defaultValue="pix" className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <RadioGroupItem value="pix" id="pix" className="peer sr-only" />
-                        <Label
-                          htmlFor="pix"
-                          className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
-                        >
-                          <QrCode className="mb-3 h-6 w-6" />
-                          PIX (Instantâneo)
-                        </Label>
-                      </div>
-                      <div>
-                        <RadioGroupItem value="card" id="card" className="peer sr-only" />
-                        <Label
-                          htmlFor="card"
-                          className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
-                        >
-                          <CreditCard className="mb-3 h-6 w-6" />
-                          Cartão Crédito
-                        </Label>
-                      </div>
-                      <div>
-                        <RadioGroupItem value="boleto" id="boleto" className="peer sr-only" />
-                        <Label
-                          htmlFor="boleto"
-                          className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
-                        >
-                          <Banknote className="mb-3 h-6 w-6" />
-                          Boleto Bancário
-                        </Label>
-                      </div>
-                    </RadioGroup>
-                  </div>
-
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-8 text-xl rounded-xl shadow-lg shadow-primary/20"
-                    disabled={loading}
-                  >
-                    {loading ? (
-                      <Loader2 className="w-6 h-6 animate-spin" />
-                    ) : (
-                      <>Finalizar Compra - R$ {product.price.toFixed(2)}</>
-                    )}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-
-            <div className="flex items-center justify-center gap-8 py-4 opacity-50 grayscale hover:grayscale-0 transition-all">
-              <ShieldCheck className="w-10 h-10" />
-              <div className="text-sm font-bold">PAGAMENTO SEGURO SSL</div>
-              <div className="text-sm font-bold">COMPRA PROTEGIDA</div>
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            <Card className="bg-card/30 border-border sticky top-24">
-              <CardHeader>
-                <CardTitle className="font-headline text-xl">Resumo do Pedido</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">{product.name}</span>
-                  <span className="font-bold">R$ {product.price.toFixed(2)}</span>
+        <div className="space-y-6">
+          {/* Resumo do Pedido - Mobile First (Topo) */}
+          <Card className="bg-primary/5 border-primary/20">
+            <CardContent className="p-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="font-headline text-xl">{product.name}</h2>
+                  <p className="text-xs text-muted-foreground uppercase tracking-widest">Assinatura Premium</p>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Taxas</span>
-                  <span className="text-green-500">Grátis</span>
+                <div className="text-right">
+                  <span className="text-2xl font-headline font-bold text-primary">R$ {product.price.toFixed(2)}</span>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Formulário */}
+          <Card className="bg-card/50 border-border rounded-2xl">
+            <CardHeader>
+              <CardTitle className="font-headline text-2xl">Checkout</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleCheckout} className="space-y-6">
+                <div className="space-y-3">
+                  <Label htmlFor="email" className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
+                    Seu E-mail de Entrega
+                  </Label>
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    placeholder="seu@email.com"
+                    className="bg-background border-border h-14 text-base rounded-xl"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                  <p className="text-[10px] text-muted-foreground text-center">
+                    As credenciais serão enviadas para este e-mail.
+                  </p>
+                </div>
+
                 <Separator className="bg-border/50" />
-                <div className="flex justify-between text-xl font-bold">
-                  <span>Total</span>
-                  <span className="text-primary">R$ {product.price.toFixed(2)}</span>
+
+                <div className="space-y-4">
+                  <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
+                    Forma de Pagamento
+                  </Label>
+                  <RadioGroup defaultValue="pix" className="grid grid-cols-1 gap-3">
+                    {[
+                      { id: 'pix', label: 'PIX (Automático)', icon: QrCode },
+                      { id: 'card', label: 'Cartão de Crédito', icon: CreditCard },
+                    ].map((method) => (
+                      <div key={method.id}>
+                        <RadioGroupItem value={method.id} id={method.id} className="peer sr-only" />
+                        <Label
+                          htmlFor={method.id}
+                          className="flex items-center gap-4 rounded-xl border-2 border-muted bg-card p-4 hover:bg-accent cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 transition-all"
+                        >
+                          <method.icon className="h-5 w-5 text-primary" />
+                          <span className="font-bold text-sm uppercase tracking-wide">{method.label}</span>
+                        </Label>
+                      </div>
+                    ))}
+                  </RadioGroup>
                 </div>
-              </CardContent>
-              <CardFooter className="flex flex-col gap-4 text-xs text-muted-foreground">
-                <p className="flex items-start gap-2">
-                  <ShieldCheck className="w-4 h-4 text-primary shrink-0" />
-                  Acesso vitalício enquanto durar a assinatura. Suporte garantido.
-                </p>
-              </CardFooter>
-            </Card>
+
+                <Button 
+                  type="submit" 
+                  className="w-full bg-primary hover:bg-primary/90 text-white font-bold h-16 text-lg rounded-2xl shadow-xl shadow-primary/20 mt-4"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                  ) : (
+                    <>PAGAR AGORA</>
+                  )}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+
+          <div className="flex flex-col items-center gap-4 py-4 opacity-50">
+            <div className="flex gap-4">
+              <ShieldCheck className="w-8 h-8" />
+              <div className="text-[10px] font-bold flex flex-col justify-center text-left">
+                <span>PAGAMENTO 100% SEGURO</span>
+                <span>CRIPTOGRAFIA SSL</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
