@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useProducts } from "@/context/products-context";
 import { Button } from "@/components/ui/button";
 import { 
@@ -14,7 +14,8 @@ import {
   CheckCircle2, 
   GripVertical,
   Tv,
-  Link as LinkIcon
+  Link as LinkIcon,
+  Pencil
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -39,6 +40,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { generateProductDescription } from "@/ai/flows/admin-ai-product-description-generation";
 import { useToast } from "@/hooks/use-toast";
 import { StreamingService } from "@/lib/types";
@@ -47,8 +49,9 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 
 export default function AdminProductsPage() {
-  const { products, addProduct, deleteProduct, updateProductsOrder } = useProducts();
+  const { products, addProduct, deleteProduct, updateProduct, updateProductsOrder } = useProducts();
   const [isAdding, setIsAdding] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<StreamingService | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [productToDelete, setProductToDelete] = useState<StreamingService | null>(null);
   const { toast } = useToast();
@@ -62,8 +65,32 @@ export default function AdminProductsPage() {
     features: [] as string[]
   });
 
-  const handleAiGenerate = async () => {
-    if (!formData.name) {
+  const [editFormData, setEditFormData] = useState({
+    name: "",
+    price: "",
+    description: "",
+    imageUrl: "",
+    features: [] as string[],
+    active: true
+  });
+  const [newEditFeature, setNewEditFeature] = useState("");
+
+  useEffect(() => {
+    if (editingProduct) {
+      setEditFormData({
+        name: editingProduct.name,
+        price: editingProduct.price.toString(),
+        description: editingProduct.description,
+        imageUrl: editingProduct.imageUrl,
+        features: [...editingProduct.features],
+        active: editingProduct.active
+      });
+    }
+  }, [editingProduct]);
+
+  const handleAiGenerate = async (mode: 'add' | 'edit') => {
+    const name = mode === 'add' ? formData.name : editFormData.name;
+    if (!name) {
       toast({ title: "Erro", description: "Insira o nome do produto primeiro.", variant: "destructive" });
       return;
     }
@@ -71,9 +98,13 @@ export default function AdminProductsPage() {
     setIsGenerating(true);
     try {
       const result = await generateProductDescription({ 
-        productDetails: `${formData.name}, premium streaming, multiple profiles, ultra HD quality` 
+        productDetails: `${name}, premium streaming, multiple profiles, ultra HD quality` 
       });
-      setFormData({ ...formData, description: result.description });
+      if (mode === 'add') {
+        setFormData({ ...formData, description: result.description });
+      } else {
+        setEditFormData({ ...editFormData, description: result.description });
+      }
       toast({ title: "Sucesso", description: "Descrição gerada com IA!" });
     } catch (error) {
       toast({ title: "Erro", description: "Falha ao gerar descrição.", variant: "destructive" });
@@ -82,29 +113,39 @@ export default function AdminProductsPage() {
     }
   };
 
-  const addFeature = () => {
-    if (newFeature.trim()) {
-      setFormData({
-        ...formData,
-        features: [...formData.features, newFeature.trim()]
-      });
-      setNewFeature("");
+  const addFeature = (mode: 'add' | 'edit') => {
+    if (mode === 'add') {
+      if (newFeature.trim()) {
+        setFormData({ ...formData, features: [...formData.features, newFeature.trim()] });
+        setNewFeature("");
+      }
+    } else {
+      if (newEditFeature.trim()) {
+        setEditFormData({ ...editFormData, features: [...editFormData.features, newEditFeature.trim()] });
+        setNewEditFeature("");
+      }
     }
   };
 
-  const removeFeature = (index: number) => {
-    setFormData({
-      ...formData,
-      features: formData.features.filter((_, i) => i !== index)
-    });
+  const removeFeature = (index: number, mode: 'add' | 'edit') => {
+    if (mode === 'add') {
+      setFormData({ ...formData, features: formData.features.filter((_, i) => i !== index) });
+    } else {
+      setEditFormData({ ...editFormData, features: editFormData.features.filter((_, i) => i !== index) });
+    }
   };
 
-  const onDragEndFeatures = (result: DropResult) => {
+  const onDragEndFeatures = (result: DropResult, mode: 'add' | 'edit') => {
     if (!result.destination) return;
-    const items = Array.from(formData.features);
+    const items = mode === 'add' ? Array.from(formData.features) : Array.from(editFormData.features);
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
-    setFormData({ ...formData, features: items });
+    
+    if (mode === 'add') {
+      setFormData({ ...formData, features: items });
+    } else {
+      setEditFormData({ ...editFormData, features: items });
+    }
   };
 
   const onDragEndProducts = (result: DropResult) => {
@@ -118,11 +159,7 @@ export default function AdminProductsPage() {
 
   const handleSaveProduct = () => {
     if (!formData.name || !formData.price || !formData.imageUrl) {
-      toast({ 
-        title: "Campos Incompletos", 
-        description: "Por favor, preencha nome, preço e URL da imagem.", 
-        variant: "destructive" 
-      });
+      toast({ title: "Campos Incompletos", description: "Por favor, preencha nome, preço e URL da imagem.", variant: "destructive" });
       return;
     }
     
@@ -131,17 +168,37 @@ export default function AdminProductsPage() {
       name: formData.name,
       price: parseFloat(formData.price),
       description: formData.description,
-      stock: 0, // Inicia com estoque zero
+      stock: 0,
       features: formData.features.length > 0 ? formData.features : ["Acesso imediato", "Suporte 24h"],
       imageUrl: formData.imageUrl,
       active: true,
     };
 
     addProduct(newProduct);
-    toast({ title: "Produto Salvo", description: `${formData.name} foi adicionado. Abasteça o estoque no menu Estoque.` });
+    toast({ title: "Produto Salvo", description: `${formData.name} foi adicionado.` });
     setIsAdding(false);
     setFormData({ name: "", price: "", description: "", imageUrl: "", features: [] });
-    setNewFeature("");
+  };
+
+  const handleUpdateProduct = () => {
+    if (!editingProduct) return;
+    if (!editFormData.name || !editFormData.price || !editFormData.imageUrl) {
+      toast({ title: "Campos Incompletos", description: "Por favor, preencha nome, preço e URL da imagem.", variant: "destructive" });
+      return;
+    }
+
+    updateProduct({
+      ...editingProduct,
+      name: editFormData.name,
+      price: parseFloat(editFormData.price),
+      description: editFormData.description,
+      imageUrl: editFormData.imageUrl,
+      features: editFormData.features,
+      active: editFormData.active
+    });
+
+    toast({ title: "Produto Atualizado", description: "Alterações salvas com sucesso." });
+    setEditingProduct(null);
   };
 
   return (
@@ -165,101 +222,36 @@ export default function AdminProductsPage() {
             </DialogHeader>
             <div className="grid gap-6 py-4">
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Nome do Serviço</Label>
-                <Input 
-                  id="name" 
-                  placeholder="Ex: Netflix Premium 4K" 
-                  className="bg-background border-border h-12 rounded-xl"
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                />
+                <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Nome do Serviço</Label>
+                <Input placeholder="Ex: Netflix Premium 4K" className="bg-background border-border h-12 rounded-xl" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
               </div>
-
               <div className="space-y-2">
-                <Label htmlFor="imageUrl" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">URL da Imagem da Capa</Label>
+                <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">URL da Imagem</Label>
                 <div className="relative">
                   <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input 
-                    id="imageUrl" 
-                    placeholder="https://exemplo.com/imagem.jpg" 
-                    className="bg-background border-border h-12 rounded-xl pl-12"
-                    value={formData.imageUrl}
-                    onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
-                  />
+                  <Input placeholder="https://exemplo.com/imagem.jpg" className="bg-background border-border h-12 rounded-xl pl-12" value={formData.imageUrl} onChange={(e) => setFormData({...formData, imageUrl: e.target.value})} />
                 </div>
               </div>
-
               <div className="space-y-2">
-                <Label htmlFor="price" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Preço (R$)</Label>
-                <Input 
-                  id="price" 
-                  type="number" 
-                  placeholder="19.90"
-                  className="bg-background border-border h-12 rounded-xl"
-                  value={formData.price}
-                  onChange={(e) => setFormData({...formData, price: e.target.value})}
-                />
+                <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Preço (R$)</Label>
+                <Input type="number" placeholder="19.90" className="bg-background border-border h-12 rounded-xl" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} />
               </div>
-
               <div className="space-y-3">
                 <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Vantagens (Arraste para ordenar)</Label>
                 <div className="flex gap-2">
-                  <Input 
-                    placeholder="Ex: 4 Telas simultâneas" 
-                    className="bg-background border-border h-12 rounded-xl flex-1"
-                    value={newFeature}
-                    onChange={(e) => setNewFeature(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && addFeature()}
-                  />
-                  <Button 
-                    type="button" 
-                    onClick={addFeature}
-                    className="h-12 w-12 rounded-xl bg-primary hover:bg-primary/90"
-                  >
-                    <Plus className="w-5 h-5" />
-                  </Button>
+                  <Input placeholder="Ex: 4 Telas simultâneas" className="bg-background border-border h-12 rounded-xl flex-1" value={newFeature} onChange={(e) => setNewFeature(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && addFeature('add')} />
+                  <Button type="button" onClick={() => addFeature('add')} className="h-12 w-12 rounded-xl bg-primary hover:bg-primary/90"><Plus className="w-5 h-5" /></Button>
                 </div>
-                
-                <DragDropContext onDragEnd={onDragEndFeatures}>
-                  <Droppable droppableId="features">
+                <DragDropContext onDragEnd={(res) => onDragEndFeatures(res, 'add')}>
+                  <Droppable droppableId="features-add">
                     {(provided) => (
-                      <div 
-                        {...provided.droppableProps} 
-                        ref={provided.innerRef} 
-                        className="space-y-2 mt-2"
-                      >
+                      <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
                         {formData.features.map((feature, idx) => (
-                          <Draggable key={`${feature}-${idx}`} draggableId={`${feature}-${idx}`} index={idx}>
-                            {(provided, snapshot) => (
-                              <div 
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                                {...provided.dragHandleProps}
-                                style={{
-                                  ...provided.draggableProps.style,
-                                  left: snapshot.isDragging ? provided.draggableProps.style?.left : 'auto',
-                                  width: snapshot.isDragging ? '100%' : 'auto',
-                                }}
-                                className={cn(
-                                  "flex items-center justify-between p-3 bg-background border border-border rounded-xl transition-shadow",
-                                  snapshot.isDragging && "shadow-2xl border-primary ring-2 ring-primary/20 z-[9999] bg-card"
-                                )}
-                              >
-                                <div className="flex items-center gap-3 flex-1">
-                                  <div className="text-muted-foreground px-1 cursor-grab active:cursor-grabbing">
-                                    <GripVertical className="w-4 h-4" />
-                                  </div>
-                                  <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-                                  <span className="text-sm font-medium leading-tight">{feature}</span>
-                                </div>
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon" 
-                                  className="h-8 w-8 text-muted-foreground hover:text-red-500"
-                                  onClick={() => removeFeature(idx)}
-                                >
-                                  <X className="w-4 h-4" />
-                                </Button>
+                          <Draggable key={`add-${idx}`} draggableId={`add-${idx}`} index={idx}>
+                            {(provided, snap) => (
+                              <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} className={cn("flex items-center justify-between p-3 bg-background border border-border rounded-xl", snap.isDragging && "shadow-2xl border-primary")}>
+                                <div className="flex items-center gap-3"><GripVertical className="w-4 h-4 text-muted-foreground" /><CheckCircle2 className="w-4 h-4 text-primary" /><span className="text-sm font-medium">{feature}</span></div>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-red-500" onClick={() => removeFeature(idx, 'add')}><X className="w-4 h-4" /></Button>
                               </div>
                             )}
                           </Draggable>
@@ -270,34 +262,19 @@ export default function AdminProductsPage() {
                   </Droppable>
                 </DragDropContext>
               </div>
-
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="description" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Descrição</Label>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="h-8 gap-1 text-primary hover:text-primary/80 hover:bg-primary/5 font-bold rounded-lg"
-                    onClick={handleAiGenerate}
-                    disabled={isGenerating}
-                  >
-                    {isGenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />}
-                    Gerar com IA
+                  <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Descrição</Label>
+                  <Button variant="ghost" size="sm" className="h-8 gap-1 text-primary hover:bg-primary/5 font-bold" onClick={() => handleAiGenerate('add')} disabled={isGenerating}>
+                    {isGenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />} Gerar com IA
                   </Button>
                 </div>
-                <Textarea 
-                  id="description" 
-                  rows={3} 
-                  placeholder="Descreva as vantagens..." 
-                  className="bg-background border-border rounded-xl resize-none"
-                  value={formData.description}
-                  onChange={(e) => setFormData({...formData, description: e.target.value})}
-                />
+                <Textarea id="description" rows={3} placeholder="Descreva as vantagens..." className="bg-background border-border rounded-xl" value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} />
               </div>
             </div>
-            <DialogFooter className="gap-2 pb-4">
+            <DialogFooter className="gap-2">
               <Button variant="outline" className="rounded-xl h-12 font-bold flex-1" onClick={() => setIsAdding(false)}>CANCELAR</Button>
-              <Button className="bg-primary hover:bg-primary/90 font-bold rounded-xl h-12 px-8 flex-1" onClick={handleSaveProduct}>SALVAR PRODUTO</Button>
+              <Button className="bg-primary hover:bg-primary/90 font-bold rounded-xl h-12 flex-1" onClick={handleSaveProduct}>SALVAR</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -306,72 +283,39 @@ export default function AdminProductsPage() {
       <DragDropContext onDragEnd={onDragEndProducts}>
         <Droppable droppableId="products">
           {(provided) => (
-            <div 
-              {...provided.droppableProps} 
-              ref={provided.innerRef} 
-              className="grid grid-cols-1 gap-4"
-            >
+            <div {...provided.droppableProps} ref={provided.innerRef} className="grid grid-cols-1 gap-4">
               {products.map((product, idx) => (
                 <Draggable key={product.id} draggableId={product.id} index={idx}>
-                  {(provided, snapshot) => (
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      {...provided.dragHandleProps}
-                      style={{
-                        ...provided.draggableProps.style,
-                        left: snapshot.isDragging ? provided.draggableProps.style?.left : 'auto',
-                      }}
-                      className={cn(
-                        "rounded-2xl transition-all",
-                        snapshot.isDragging && "z-[9999] scale-[1.02]"
-                      )}
-                    >
-                      <Card className={cn(
-                        "bg-card/50 border-border rounded-2xl overflow-hidden group transition-shadow",
-                        snapshot.isDragging && "shadow-2xl border-primary ring-2 ring-primary/20 bg-card"
-                      )}>
+                  {(provided, snap) => (
+                    <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} className={cn("rounded-2xl transition-all", snap.isDragging && "z-50 scale-[1.02]")}>
+                      <Card className={cn("bg-card/50 border-border rounded-2xl overflow-hidden group transition-shadow", snap.isDragging && "shadow-2xl border-primary bg-card")}>
                         <CardContent className="p-4">
                           <div className="flex items-center gap-4">
-                            <div className="text-muted-foreground cursor-grab active:cursor-grabbing p-2">
-                              <GripVertical className="w-5 h-5" />
-                            </div>
-                            
+                            <div className="text-muted-foreground cursor-grab active:cursor-grabbing p-2"><GripVertical className="w-5 h-5" /></div>
                             <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                               <div className="flex items-center gap-3">
                                 <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-primary/10">
-                                  {product.imageUrl ? (
-                                    <Image src={product.imageUrl} alt={product.name} fill className="object-cover" />
-                                  ) : (
-                                    <Tv className="w-5 h-5 text-primary absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" />
-                                  )}
+                                  {product.imageUrl ? <Image src={product.imageUrl} alt={product.name} fill className="object-cover" /> : <Tv className="w-5 h-5 text-primary absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" />}
                                 </div>
                                 <div className="flex flex-col">
                                   <span className="font-bold text-sm">{product.name}</span>
                                   <span className="text-[10px] text-muted-foreground uppercase truncate max-w-[150px]">{product.imageUrl}</span>
                                 </div>
                               </div>
-
                               <div className="flex items-center gap-6">
                                 <div className="flex flex-col text-right">
                                   <span className="font-bold text-primary text-sm">R$ {product.price.toFixed(2)}</span>
-                                  <span className={`text-[10px] ${product.stock < 10 ? 'text-red-500 font-bold' : 'text-muted-foreground'}`}>
-                                    {product.stock} un.
-                                  </span>
+                                  <span className={`text-[10px] ${product.stock < 2 ? 'text-red-500 font-bold' : 'text-muted-foreground'}`}>{product.stock} un.</span>
                                 </div>
-
-                                <Badge className={product.active ? "bg-green-500/20 text-green-500 border-none" : "bg-muted text-muted-foreground"}>
-                                  {product.active ? "Ativo" : "Inativo"}
-                                </Badge>
-
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon" 
-                                  className="h-10 w-10 text-muted-foreground hover:text-red-500 hover:bg-red-500/5 rounded-xl"
-                                  onClick={() => setProductToDelete(product)}
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
+                                <Badge className={product.active ? "bg-green-500/20 text-green-500 border-none" : "bg-muted text-muted-foreground"}>{product.active ? "Ativo" : "Inativo"}</Badge>
+                                <div className="flex gap-1">
+                                  <Button variant="ghost" size="icon" className="h-10 w-10 text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-xl" onClick={() => setEditingProduct(product)}>
+                                    <Pencil className="w-4 h-4" />
+                                  </Button>
+                                  <Button variant="ghost" size="icon" className="h-10 w-10 text-muted-foreground hover:text-red-500 hover:bg-red-500/5 rounded-xl" onClick={() => setProductToDelete(product)}>
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -387,34 +331,89 @@ export default function AdminProductsPage() {
         </Droppable>
       </DragDropContext>
 
+      {/* Edit Dialog */}
+      <Dialog open={!!editingProduct} onOpenChange={(open) => !open && setEditingProduct(null)}>
+        <DialogContent className="sm:max-w-[550px] bg-card border-border rounded-[2rem] max-h-[90vh] overflow-y-auto no-scrollbar">
+          <DialogHeader>
+            <DialogTitle className="font-headline text-2xl uppercase tracking-normal">Editar {editingProduct?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-6 py-4">
+            <div className="flex items-center justify-between p-4 bg-muted/20 rounded-xl border border-border/50">
+              <div className="flex flex-col gap-1">
+                <Label className="text-sm font-bold uppercase tracking-wider">Status do Serviço</Label>
+                <p className="text-[10px] text-muted-foreground">Define se o produto aparece na vitrine.</p>
+              </div>
+              <Switch checked={editFormData.active} onCheckedChange={(val) => setEditFormData({...editFormData, active: val})} />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Nome do Serviço</Label>
+              <Input className="bg-background border-border h-12 rounded-xl" value={editFormData.name} onChange={(e) => setEditFormData({...editFormData, name: e.target.value})} />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">URL da Imagem</Label>
+              <Input className="bg-background border-border h-12 rounded-xl" value={editFormData.imageUrl} onChange={(e) => setEditFormData({...editFormData, imageUrl: e.target.value})} />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Preço (R$)</Label>
+              <Input type="number" className="bg-background border-border h-12 rounded-xl" value={editFormData.price} onChange={(e) => setEditFormData({...editFormData, price: e.target.value})} />
+            </div>
+            <div className="space-y-3">
+              <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Vantagens (Arraste para ordenar)</Label>
+              <div className="flex gap-2">
+                <Input placeholder="Nova vantagem..." className="bg-background border-border h-12 rounded-xl flex-1" value={newEditFeature} onChange={(e) => setNewEditFeature(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && addFeature('edit')} />
+                <Button type="button" onClick={() => addFeature('edit')} className="h-12 w-12 rounded-xl bg-primary hover:bg-primary/90"><Plus className="w-5 h-5" /></Button>
+              </div>
+              <DragDropContext onDragEnd={(res) => onDragEndFeatures(res, 'edit')}>
+                <Droppable droppableId="features-edit">
+                  {(provided) => (
+                    <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
+                      {editFormData.features.map((feature, idx) => (
+                        <Draggable key={`edit-${idx}`} draggableId={`edit-${idx}`} index={idx}>
+                          {(provided, snap) => (
+                            <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} className={cn("flex items-center justify-between p-3 bg-background border border-border rounded-xl", snap.isDragging && "shadow-2xl border-primary bg-card")}>
+                              <div className="flex items-center gap-3"><GripVertical className="w-4 h-4 text-muted-foreground" /><CheckCircle2 className="w-4 h-4 text-primary" /><span className="text-sm font-medium">{feature}</span></div>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-red-500" onClick={() => removeFeature(idx, 'edit')}><X className="w-4 h-4" /></Button>
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
+              </DragDropContext>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Descrição</Label>
+                <Button variant="ghost" size="sm" className="h-8 gap-1 text-primary hover:bg-primary/5 font-bold" onClick={() => handleAiGenerate('edit')} disabled={isGenerating}>
+                  {isGenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />} Gerar com IA
+                </Button>
+              </div>
+              <Textarea rows={3} className="bg-background border-border rounded-xl" value={editFormData.description} onChange={(e) => setEditFormData({...editFormData, description: e.target.value})} />
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" className="rounded-xl h-12 font-bold flex-1" onClick={() => setEditingProduct(null)}>CANCELAR</Button>
+            <Button className="bg-primary hover:bg-primary/90 font-bold rounded-xl h-12 flex-1" onClick={handleUpdateProduct}>SALVAR ALTERAÇÕES</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <AlertDialog open={!!productToDelete} onOpenChange={(open) => !open && setProductToDelete(null)}>
         <AlertDialogContent className="bg-card border-border rounded-[2rem]">
           <AlertDialogHeader>
-            <div className="mx-auto w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center mb-4">
-              <AlertCircle className="w-6 h-6 text-red-500" />
-            </div>
+            <div className="mx-auto w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center mb-4"><AlertCircle className="w-6 h-6 text-red-500" /></div>
             <AlertDialogTitle className="font-headline text-2xl text-center uppercase tracking-normal">Confirmar Exclusão</AlertDialogTitle>
-            <AlertDialogDescription className="text-center text-muted-foreground">
-              Deseja excluir <strong>{productToDelete?.name}</strong>?
-            </AlertDialogDescription>
+            <AlertDialogDescription className="text-center text-muted-foreground">Deseja excluir <strong>{productToDelete?.name}</strong>?</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="sm:justify-center gap-3 mt-4">
             <AlertDialogCancel className="rounded-xl h-12 font-bold px-8">CANCELAR</AlertDialogCancel>
-            <AlertDialogAction 
-              className="bg-red-500 hover:bg-red-600 rounded-xl h-12 font-bold px-8"
-              onClick={() => {
-                if (productToDelete) {
-                  deleteProduct(productToDelete.id);
-                  toast({ title: "Produto Excluído", description: "Removido com sucesso." });
-                  setProductToDelete(null);
-                }
-              }}
-            >
-              EXCLUIR AGORA
-            </AlertDialogAction>
+            <AlertDialogAction className="bg-red-500 hover:bg-red-600 rounded-xl h-12 font-bold px-8" onClick={() => { if (productToDelete) { deleteProduct(productToDelete.id); toast({ title: "Produto Excluído", description: "Removido com sucesso." }); setProductToDelete(null); } }}>EXCLUIR AGORA</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
   );
 }
+
