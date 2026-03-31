@@ -25,13 +25,20 @@ export type StreamingService = {
 
 export type OrderStatus = 'pending' | 'completed' | 'cancelled';
 
+export type DeliveredCredential = {
+  productName: string;
+  email: string;
+  pass: string;
+  screen: string;
+  screenPass?: string;
+};
+
 export type Order = {
   id: string;
-  productId: string;
-  productName: string;
-  customerEmail: string;
+  customerName: string;
+  customerPhone: string;
   status: OrderStatus;
   date: string;
   total: number;
-  credentialsSent?: boolean;
+  items: DeliveredCredential[];
 };

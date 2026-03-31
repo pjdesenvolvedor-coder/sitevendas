@@ -30,7 +30,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
-import { StreamingService } from "@/lib/types";
+import { StreamingService, Order, DeliveredCredential } from "@/lib/types";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,7 +41,7 @@ import { createPixAction, checkPixStatusAction, PixResponse } from "@/lib/paymen
 
 export default function CheckoutPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
-  const { products, sellCredential } = useProducts();
+  const { products, sellCredential, addOrder } = useProducts();
   const { toast } = useToast();
   
   const [selectedProducts, setSelectedProducts] = useState<StreamingService[]>([]);
@@ -55,13 +55,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
     phone: ""
   });
 
-  const [purchasedCredentials, setPurchasedCredentials] = useState<{
-    productName: string, 
-    email: string, 
-    pass: string, 
-    screen: string, 
-    screenPass?: string
-  }[]>([]);
+  const [purchasedCredentials, setPurchasedCredentials] = useState<DeliveredCredential[]>([]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -71,7 +65,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
         const result = await checkPixStatusAction(pixData.id);
         if (result.status === 'paid') {
           // Consumir credenciais do estoque global
-          const credentials = selectedProducts.map(p => {
+          const credentials: DeliveredCredential[] = selectedProducts.map(p => {
             const sold = sellCredential(p.id);
             return {
               productName: p.name,
@@ -82,6 +76,18 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
             };
           });
           
+          // Criar registro do pedido
+          const newOrder: Order = {
+            id: `ORD-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
+            customerName: formData.fullName,
+            customerPhone: formData.phone,
+            status: 'completed',
+            date: new Date().toISOString(),
+            total: selectedProducts.reduce((acc, p) => acc + p.price, 0),
+            items: credentials
+          };
+          
+          addOrder(newOrder);
           setPurchasedCredentials(credentials);
           setPaymentStatus('paid');
           clearInterval(interval);
@@ -96,7 +102,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [paymentStatus, pixData?.id, toast, selectedProducts, sellCredential]);
+  }, [paymentStatus, pixData?.id, toast, selectedProducts, sellCredential, addOrder, formData]);
 
   useEffect(() => {
     const initialProduct = products.find(p => p.id === resolvedParams.id);
