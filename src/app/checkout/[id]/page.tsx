@@ -377,13 +377,18 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
                     </div>
                   </div>
 
-                  <Button 
-                    onClick={() => copyToClipboard(pixData.qr_code)}
-                    className="w-full h-14 bg-primary hover:bg-primary/90 font-bold uppercase tracking-widest rounded-xl text-xs gap-2"
-                  >
-                    <Copy className="w-4 h-4" />
-                    Copiar Código PIX
-                  </Button>
+                  <div className="text-center">
+                    <p className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] mb-2">
+                      PIX -&gt; COPIA E COLA -&gt; PAGAR
+                    </p>
+                    <Button 
+                      onClick={() => copyToClipboard(pixData.qr_code)}
+                      className="w-full h-14 bg-primary hover:bg-primary/90 font-bold uppercase tracking-widest rounded-xl text-xs gap-2"
+                    >
+                      <Copy className="w-4 h-4" />
+                      Copiar Código PIX
+                    </Button>
+                  </div>
 
                   <p className="text-[9px] text-center text-muted-foreground uppercase font-medium leading-relaxed">
                     Após o pagamento, o sistema identificará automaticamente <br /> e liberará seu acesso em instantes.
