@@ -94,6 +94,12 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
     }, 2000);
   };
 
+  const availableToAdd = products.filter(p => 
+    p.active && 
+    p.stock > 0 && 
+    !selectedProducts.find(sp => sp.id === p.id)
+  );
+
   return (
     <div className="min-h-screen pt-32 pb-12 bg-background">
       <Navbar />
@@ -144,20 +150,18 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-card border-white/10 w-64 p-2 rounded-xl">
-                {products
-                  .filter(p => p.active && !selectedProducts.find(sp => sp.id === p.id))
-                  .map(product => (
-                    <DropdownMenuItem 
-                      key={product.id} 
-                      className="flex justify-between items-center p-3 rounded-lg cursor-pointer hover:bg-primary/10 group"
-                      onClick={() => handleAddProduct(product)}
-                    >
-                      <span className="font-bold text-sm text-white group-hover:text-primary">{product.name}</span>
-                      <span className="text-xs font-bold text-primary">R$ {product.price.toFixed(2)}</span>
-                    </DropdownMenuItem>
-                  ))}
-                {products.filter(p => p.active && !selectedProducts.find(sp => sp.id === p.id)).length === 0 && (
-                  <div className="p-3 text-center text-xs text-muted-foreground italic">Todos os produtos já adicionados</div>
+                {availableToAdd.map(product => (
+                  <DropdownMenuItem 
+                    key={product.id} 
+                    className="flex justify-between items-center p-3 rounded-lg cursor-pointer hover:bg-primary/10 group"
+                    onClick={() => handleAddProduct(product)}
+                  >
+                    <span className="font-bold text-sm text-white group-hover:text-primary">{product.name}</span>
+                    <span className="text-xs font-bold text-primary">R$ {product.price.toFixed(2)}</span>
+                  </DropdownMenuItem>
+                ))}
+                {availableToAdd.length === 0 && (
+                  <div className="p-3 text-center text-xs text-muted-foreground italic">Nenhum outro produto disponível no momento</div>
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
