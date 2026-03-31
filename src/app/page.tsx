@@ -1,3 +1,4 @@
+
 import Image from "next/image";
 import Link from "next/link";
 import { Navbar } from "@/components/navbar";
@@ -39,7 +40,7 @@ export default function Home() {
             <span className="text-primary italic">FRONTEIRAS.</span>
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground mb-8 max-w-md mx-auto font-body leading-relaxed">
-            Acesso instantâneo às melhores plataformas do mundo. Sem burocracia, preço baixo e entrega imediata na <span className="text-primary font-bold">PJ CONTAS</span>.
+            Acesso instantâneo às melhores plataformas do mundo. Sem burocracia, preço baixo e entrega imediata na <span className="text-primary font-bold">PJ</span> <span className="text-white font-bold">CONTAS</span>.
           </p>
           <div className="flex flex-col gap-3 px-4 sm:flex-row sm:justify-center">
             <Button size="lg" className="bg-primary hover:bg-primary/90 w-full sm:w-auto h-14 text-lg rounded-xl font-bold shadow-lg shadow-primary/20">
@@ -83,7 +84,7 @@ export default function Home() {
         <div className="mb-8">
           <h2 className="text-3xl font-headline font-bold mb-2 uppercase">Plataformas</h2>
           <p className="text-sm text-muted-foreground">
-            Escolha seu serviço e comece a assistir agora.
+            Escolha seu serviço e comece a assistir agora na <span className="text-primary font-bold">PJ CONTAS</span>.
           </p>
         </div>
 
@@ -107,7 +108,10 @@ export default function Home() {
                   </div>
                 </CardHeader>
                 <CardContent className="p-6">
-                  <CardTitle className="text-2xl font-headline mb-3 uppercase">{product.name}</CardTitle>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Tv className="w-5 h-5 text-primary" />
+                    <CardTitle className="text-2xl font-headline uppercase">{product.name}</CardTitle>
+                  </div>
                   <ul className="space-y-2 mb-6">
                     {product.features.slice(0, 3).map((feature, i) => (
                       <li key={i} className="flex items-center text-xs gap-2 text-muted-foreground">
@@ -142,7 +146,7 @@ export default function Home() {
             <Zap className="w-10 h-10 text-primary mx-auto mb-4" />
             <h2 className="text-3xl font-headline font-bold mb-4 uppercase">Acesso Imediato?</h2>
             <p className="text-sm text-muted-foreground mb-8">
-              Receba suas credenciais segundos após a confirmação do pagamento.
+              Receba suas credenciais segundos após a confirmação do pagamento com a <span className="text-primary font-bold">PJ CONTAS</span>.
             </p>
             <Button size="lg" className="bg-primary hover:bg-primary/90 w-full max-w-xs h-14 text-lg rounded-2xl font-bold shadow-xl shadow-primary/30">
               GARANTIR MEU ACESSO

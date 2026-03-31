@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -19,6 +20,7 @@ export function Navbar() {
               alt="PJ CONTAS" 
               fill 
               className="object-contain"
+              priority
             />
           </div>
           <span className="text-2xl font-headline font-bold tracking-tight">
