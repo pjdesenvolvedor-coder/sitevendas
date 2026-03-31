@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { useProducts } from "@/context/products-context";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Edit3, Trash2, Wand2, Loader2, AlertCircle, X, CheckCircle2 } from "lucide-react";
+import { Plus, Edit3, Trash2, Wand2, Loader2, AlertCircle, X, CheckCircle2, ChevronUp, ChevronDown } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { 
@@ -106,6 +106,16 @@ export default function AdminProductsPage() {
       ...formData,
       features: formData.features.filter((_, i) => i !== index)
     });
+  };
+
+  const moveFeature = (index: number, direction: 'up' | 'down') => {
+    const newFeatures = [...formData.features];
+    if (direction === 'up' && index > 0) {
+      [newFeatures[index], newFeatures[index - 1]] = [newFeatures[index - 1], newFeatures[index]];
+    } else if (direction === 'down' && index < newFeatures.length - 1) {
+      [newFeatures[index], newFeatures[index + 1]] = [newFeatures[index + 1], newFeatures[index]];
+    }
+    setFormData({ ...formData, features: newFeatures });
   };
 
   const handleSaveProduct = () => {
@@ -248,9 +258,29 @@ export default function AdminProductsPage() {
                 <div className="space-y-2 mt-2">
                   {formData.features.map((feature, idx) => (
                     <div key={idx} className="flex items-center justify-between p-3 bg-background border border-border rounded-xl">
-                      <div className="flex items-center gap-3">
-                        <CheckCircle2 className="w-4 h-4 text-primary" />
-                        <span className="text-sm font-medium">{feature}</span>
+                      <div className="flex items-center gap-3 flex-1">
+                        <div className="flex flex-col gap-1">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-5 w-5 hover:text-primary disabled:opacity-30"
+                            onClick={() => moveFeature(idx, 'up')}
+                            disabled={idx === 0}
+                          >
+                            <ChevronUp className="w-4 h-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-5 w-5 hover:text-primary disabled:opacity-30"
+                            onClick={() => moveFeature(idx, 'down')}
+                            disabled={idx === formData.features.length - 1}
+                          >
+                            <ChevronDown className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+                        <span className="text-sm font-medium leading-tight">{feature}</span>
                       </div>
                       <Button 
                         variant="ghost" 
