@@ -21,8 +21,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
   const [loading, setLoading] = useState(false);
   
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
+    fullName: "",
     email: "",
     phone: ""
   });
@@ -33,7 +32,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
 
   const handleCheckout = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone) {
+    if (!formData.fullName || !formData.email || !formData.phone) {
       toast({ 
         title: "Campos Incompletos", 
         description: "Por favor, preencha todos os seus dados para continuar.", 
@@ -84,34 +83,19 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
             </CardHeader>
             <CardContent className="px-8 pb-10">
               <form onSubmit={handleCheckout} className="space-y-5">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName" className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] ml-1">
-                      Nome
-                    </Label>
-                    <div className="relative">
-                      <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input 
-                        id="firstName" 
-                        placeholder="Ex: João"
-                        className="bg-background border-white/5 h-14 pl-12 rounded-xl focus:ring-primary"
-                        required
-                        value={formData.firstName}
-                        onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="lastName" className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] ml-1">
-                      Sobrenome
-                    </Label>
+                <div className="space-y-2">
+                  <Label htmlFor="fullName" className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] ml-1">
+                    Nome Completo
+                  </Label>
+                  <div className="relative">
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input 
-                      id="lastName" 
-                      placeholder="Ex: Silva"
-                      className="bg-background border-white/5 h-14 rounded-xl focus:ring-primary"
+                      id="fullName" 
+                      placeholder="Ex: João Silva"
+                      className="bg-background border-white/5 h-14 pl-12 rounded-xl focus:ring-primary"
                       required
-                      value={formData.lastName}
-                      onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+                      value={formData.fullName}
+                      onChange={(e) => setFormData({...formData, fullName: e.target.value})}
                     />
                   </div>
                 </div>
