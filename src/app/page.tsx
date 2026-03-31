@@ -87,17 +87,18 @@ export default function Home() {
 
         <div className="grid grid-cols-1 gap-8">
           {products.filter(p => p.active).map((product) => {
-            const logo = PlaceHolderImages.find(img => img.id === product.logoId)?.imageUrl || PlaceHolderImages.find(img => img.id === 'netflix')?.imageUrl || '';
             return (
               <Card key={product.id} className="group bg-card/60 border-white/5 hover:border-primary/50 transition-all duration-500 rounded-[2.5rem] overflow-hidden shadow-2xl backdrop-blur-xl">
                 <CardHeader className="p-0">
                   <div className="relative h-56 w-full overflow-hidden">
-                    <Image 
-                      src={logo} 
-                      alt={product.name} 
-                      fill 
-                      className="object-cover transition-transform duration-700 group-hover:scale-110 opacity-70 group-hover:opacity-100"
-                    />
+                    {product.imageUrl && (
+                      <Image 
+                        src={product.imageUrl} 
+                        alt={product.name} 
+                        fill 
+                        className="object-cover transition-transform duration-700 group-hover:scale-110 opacity-70 group-hover:opacity-100"
+                      />
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-card via-card/40 to-transparent"></div>
                     <div className="absolute top-6 right-6">
                       <Badge className="bg-primary text-white border-none font-bold py-1 px-4 text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20">POPULAR</Badge>

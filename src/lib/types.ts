@@ -6,7 +6,7 @@ export type StreamingService = {
   description: string;
   features: string[];
   stock: number;
-  logoId: string;
+  imageUrl: string;
   active: boolean;
 };
 

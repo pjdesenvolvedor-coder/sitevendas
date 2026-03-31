@@ -9,7 +9,7 @@ export const INITIAL_PRODUCTS: StreamingService[] = [
     description: 'Assista em 4 telas simultâneas com qualidade Ultra HD. O melhor do entretenimento sem anúncios.',
     features: ['4 Telas', 'Qualidade 4K HDR', 'Sem anúncios', 'Download disponível'],
     stock: 24,
-    logoId: 'netflix',
+    imageUrl: 'https://picsum.photos/seed/netflix/800/400',
     active: true,
   },
   {
@@ -19,7 +19,7 @@ export const INITIAL_PRODUCTS: StreamingService[] = [
     description: 'A casa do Star Wars, Marvel, Pixar e muito mais. Magia ilimitada para toda a família.',
     features: ['2 Telas', 'Acesso Star+', 'Conteúdo exclusivo', 'Qualidade Full HD'],
     stock: 12,
-    logoId: 'disney',
+    imageUrl: 'https://picsum.photos/seed/disney/800/400',
     active: true,
   },
   {
@@ -29,7 +29,7 @@ export const INITIAL_PRODUCTS: StreamingService[] = [
     description: 'As melhores séries da HBO, sucessos do cinema e esportes ao vivo com a UEFA Champions League.',
     features: ['3 Telas', 'Futebol ao vivo', 'Lançamentos Warner', '4K disponível'],
     stock: 8,
-    logoId: 'max',
+    imageUrl: 'https://picsum.photos/seed/max/800/400',
     active: true,
   }
 ];

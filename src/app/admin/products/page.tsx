@@ -13,7 +13,8 @@ import {
   X, 
   CheckCircle2, 
   GripVertical,
-  Tv
+  Tv,
+  Link as LinkIcon
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -38,25 +39,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { generateProductDescription } from "@/ai/flows/admin-ai-product-description-generation";
 import { useToast } from "@/hooks/use-toast";
 import { StreamingService } from "@/lib/types";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import { cn } from "@/lib/utils";
-
-const LOGO_OPTIONS = [
-  { id: 'netflix', name: 'Netflix' },
-  { id: 'disney', name: 'Disney+' },
-  { id: 'max', name: 'HBO Max' },
-  { id: 'prime', name: 'Prime Video' },
-];
+import Image from "next/image";
 
 export default function AdminProductsPage() {
   const { products, addProduct, deleteProduct, updateProductsOrder } = useProducts();
@@ -71,7 +59,7 @@ export default function AdminProductsPage() {
     price: "",
     description: "",
     stock: "",
-    logoId: "netflix",
+    imageUrl: "",
     features: [] as string[]
   });
 
@@ -130,10 +118,10 @@ export default function AdminProductsPage() {
   };
 
   const handleSaveProduct = () => {
-    if (!formData.name || !formData.price || !formData.stock) {
+    if (!formData.name || !formData.price || !formData.stock || !formData.imageUrl) {
       toast({ 
         title: "Campos Incompletos", 
-        description: "Por favor, preencha nome, preço e estoque.", 
+        description: "Por favor, preencha nome, preço, estoque e URL da imagem.", 
         variant: "destructive" 
       });
       return;
@@ -146,14 +134,14 @@ export default function AdminProductsPage() {
       description: formData.description,
       stock: parseInt(formData.stock),
       features: formData.features.length > 0 ? formData.features : ["Acesso imediato", "Suporte 24h"],
-      logoId: formData.logoId,
+      imageUrl: formData.imageUrl,
       active: true,
     };
 
     addProduct(newProduct);
     toast({ title: "Produto Salvo", description: `${formData.name} foi adicionado com sucesso.` });
     setIsAdding(false);
-    setFormData({ name: "", price: "", description: "", stock: "", logoId: "netflix", features: [] });
+    setFormData({ name: "", price: "", description: "", stock: "", imageUrl: "", features: [] });
     setNewFeature("");
   };
 
@@ -177,32 +165,28 @@ export default function AdminProductsPage() {
               <DialogTitle className="font-headline text-2xl uppercase tracking-tight">Novo Serviço</DialogTitle>
             </DialogHeader>
             <div className="grid gap-6 py-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Nome do Serviço</Label>
+              <div className="space-y-2">
+                <Label htmlFor="name" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Nome do Serviço</Label>
+                <Input 
+                  id="name" 
+                  placeholder="Ex: Netflix Premium 4K" 
+                  className="bg-background border-border h-12 rounded-xl"
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="imageUrl" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">URL da Imagem da Capa</Label>
+                <div className="relative">
+                  <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input 
-                    id="name" 
-                    placeholder="Ex: Netflix Premium 4K" 
-                    className="bg-background border-border h-12 rounded-xl"
-                    value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    id="imageUrl" 
+                    placeholder="https://exemplo.com/imagem.jpg" 
+                    className="bg-background border-border h-12 rounded-xl pl-12"
+                    value={formData.imageUrl}
+                    onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="logo" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Ícone / Logo</Label>
-                  <Select 
-                    value={formData.logoId} 
-                    onValueChange={(val) => setFormData({...formData, logoId: val})}
-                  >
-                    <SelectTrigger className="bg-background border-border h-12 rounded-xl">
-                      <SelectValue placeholder="Selecione o logo" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-card border-border">
-                      {LOGO_OPTIONS.map(opt => (
-                        <SelectItem key={opt.id} value={opt.id}>{opt.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                 </div>
               </div>
 
@@ -295,9 +279,6 @@ export default function AdminProductsPage() {
                           </Draggable>
                         ))}
                         {provided.placeholder}
-                        {formData.features.length === 0 && (
-                          <p className="text-[10px] text-muted-foreground italic text-center py-2">Nenhuma vantagem adicionada.</p>
-                        )}
                       </div>
                     )}
                   </Droppable>
@@ -372,12 +353,16 @@ export default function AdminProductsPage() {
                             
                             <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                               <div className="flex items-center gap-3">
-                                <div className="p-2 rounded-lg bg-primary/10">
-                                  <Tv className="w-5 h-5 text-primary" />
+                                <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-primary/10">
+                                  {product.imageUrl ? (
+                                    <Image src={product.imageUrl} alt={product.name} fill className="object-cover" />
+                                  ) : (
+                                    <Tv className="w-5 h-5 text-primary absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" />
+                                  )}
                                 </div>
                                 <div className="flex flex-col">
                                   <span className="font-bold text-sm">{product.name}</span>
-                                  <span className="text-[10px] text-muted-foreground uppercase">{product.logoId}</span>
+                                  <span className="text-[10px] text-muted-foreground uppercase truncate max-w-[150px]">{product.imageUrl}</span>
                                 </div>
                               </div>
 
