@@ -16,12 +16,8 @@ export async function sendWebhookAction(url: string, payload: any) {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
-      body: JSON.stringify({
-        source: 'PJ-CONTAS-VENDAS',
-        timestamp: new Date().toISOString(),
-        data: payload
-      }),
-      // Garante que a requisição não seja cacheada e saia do servidor
+      // Envia o payload exatamente como solicitado, sem wraps extras
+      body: JSON.stringify(payload),
       cache: 'no-store',
     });
 

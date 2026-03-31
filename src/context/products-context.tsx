@@ -169,24 +169,21 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
 
     // Dispara o Webhook se estiver ativo
     if (webhookSettings.enabled && webhookSettings.url) {
-      const payload: any = {};
-      if (webhookSettings.fields.orderId) payload.order_id = order.id;
-      if (webhookSettings.fields.customerName) payload.customer_name = order.customerName;
-      if (webhookSettings.fields.customerPhone) payload.customer_phone = order.customerPhone;
-      if (webhookSettings.fields.total) payload.total_value = order.total;
-      
-      if (webhookSettings.fields.items) {
-        payload.items = order.items.map(item => ({
-          product_name: item.productName,
-          email: item.email,
-          password: item.pass,
-          screen_name: item.screen,
-          screen_password: item.screenPass || 'Sem senha'
-        }));
-      }
+      // Para manter o formato flat solicitado, enviamos uma requisição por item vendido
+      order.items.forEach(item => {
+        const payload = {
+          nome: order.customerName,
+          telefone: order.customerPhone,
+          produto: item.productName,
+          valor: order.total,
+          emailConta: item.email,
+          senhaConta: item.pass,
+          perfil: item.screen,
+          senhaPerfil: item.screenPass || 'Sem senha'
+        };
 
-      // Chama a Server Action para processar o envio
-      sendWebhookAction(webhookSettings.url, payload);
+        sendWebhookAction(webhookSettings.url, payload);
+      });
     }
   };
 
