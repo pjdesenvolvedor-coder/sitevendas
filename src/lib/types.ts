@@ -2,6 +2,7 @@
 export type AccountCredential = {
   id: string;
   email: string;
+  password: string;
   screenName: string;
   screenPassword?: string;
   addedAt: string;

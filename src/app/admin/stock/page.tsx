@@ -15,7 +15,8 @@ import {
   Tv,
   Mail,
   Monitor,
-  Key
+  Key,
+  Lock
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -45,16 +46,17 @@ export default function AdminStockPage() {
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     email: "",
+    password: "",
     screenName: "",
     screenPassword: ""
   });
 
   const handleAddAccount = () => {
     if (!selectedProductId) return;
-    if (!formData.email || !formData.screenName) {
+    if (!formData.email || !formData.password || !formData.screenName) {
       toast({ 
         title: "Campos Incompletos", 
-        description: "Email e Tela são obrigatórios.", 
+        description: "Email, Senha da Conta e Tela são obrigatórios.", 
         variant: "destructive" 
       });
       return;
@@ -62,12 +64,13 @@ export default function AdminStockPage() {
 
     addCredential(selectedProductId, {
       email: formData.email,
+      password: formData.password,
       screenName: formData.screenName,
       screenPassword: formData.screenPassword || undefined
     });
 
     toast({ title: "Conta Adicionada", description: "O estoque foi atualizado com sucesso." });
-    setFormData({ email: "", screenName: "", screenPassword: "" });
+    setFormData({ email: "", password: "", screenName: "", screenPassword: "" });
     setSelectedProductId(null);
   };
 
@@ -156,7 +159,20 @@ export default function AdminStockPage() {
                           </div>
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-[10px] font-bold uppercase text-muted-foreground">Tela Privada</Label>
+                          <Label className="text-[10px] font-bold uppercase text-muted-foreground">Senha da Conta</Label>
+                          <div className="relative">
+                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                            <Input 
+                              type="password"
+                              placeholder="••••••••"
+                              className="bg-background border-border h-12 pl-12 rounded-xl"
+                              value={formData.password}
+                              onChange={(e) => setFormData({...formData, password: e.target.value})}
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-[10px] font-bold uppercase text-muted-foreground">Nome da Tela</Label>
                           <div className="relative">
                             <Monitor className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                             <Input 
@@ -196,19 +212,24 @@ export default function AdminStockPage() {
                     <Table>
                       <TableHeader className="bg-muted/50">
                         <TableRow className="border-border">
-                          <TableHead className="text-[10px] font-bold uppercase">E-mail</TableHead>
+                          <TableHead className="text-[10px] font-bold uppercase">Acesso (E-mail / Senha)</TableHead>
                           <TableHead className="text-[10px] font-bold uppercase">Tela</TableHead>
-                          <TableHead className="text-[10px] font-bold uppercase text-center">Senha</TableHead>
+                          <TableHead className="text-[10px] font-bold uppercase text-center">Senha Tela</TableHead>
                           <TableHead className="text-[10px] font-bold uppercase text-right">Ação</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {unsoldCredentials.map((cred) => (
                           <TableRow key={cred.id} className="border-border hover:bg-muted/20">
-                            <TableCell className="text-xs font-medium">{cred.email}</TableCell>
+                            <TableCell className="text-xs font-medium">
+                              <div className="flex flex-col">
+                                <span>{cred.email}</span>
+                                <span className="text-muted-foreground text-[10px] font-mono">Senha: ••••••••</span>
+                              </div>
+                            </TableCell>
                             <TableCell className="text-xs">{cred.screenName}</TableCell>
                             <TableCell className="text-xs text-center font-mono">
-                              {cred.screenPassword ? "••••••" : <span className="text-muted-foreground italic">N/A</span>}
+                              {cred.screenPassword ? "••••••" : <span className="text-muted-foreground italic text-[10px]">N/A</span>}
                             </TableCell>
                             <TableCell className="text-right">
                               <Button 
