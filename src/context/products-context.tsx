@@ -1,9 +1,9 @@
-
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { StreamingService, AccountCredential, Order, WebhookConfig } from '@/lib/types';
 import { INITIAL_PRODUCTS } from '@/lib/mock-data';
+import { sendWebhookAction } from '@/lib/webhook-actions';
 
 type ProductsContextType = {
   products: StreamingService[];
@@ -167,7 +167,7 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
   const addOrder = (order: Order) => {
     setOrders((prev) => [order, ...prev]);
 
-    // Trigger Webhook
+    // Trigger Webhook via Server Action (avoids CORS issues)
     if (webhookSettings.enabled && webhookSettings.url) {
       const payload: any = {};
       if (webhookSettings.fields.orderId) payload.orderId = order.id;
@@ -176,11 +176,7 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
       if (webhookSettings.fields.total) payload.totalValue = order.total;
       if (webhookSettings.fields.items) payload.deliveredItems = order.items;
 
-      fetch(webhookSettings.url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      }).catch(err => console.warn("Webhook delivery failed:", err));
+      sendWebhookAction(webhookSettings.url, payload);
     }
   };
 
