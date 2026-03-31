@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -7,8 +6,6 @@ import { Button } from "@/components/ui/button";
 import { 
   Plus, 
   Trash2, 
-  Wand2, 
-  Loader2, 
   AlertCircle, 
   X, 
   CheckCircle2, 
@@ -39,9 +36,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { generateProductDescription } from "@/ai/flows/admin-ai-product-description-generation";
 import { useToast } from "@/hooks/use-toast";
 import { StreamingService } from "@/lib/types";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
@@ -52,7 +47,6 @@ export default function AdminProductsPage() {
   const { products, addProduct, deleteProduct, updateProduct, updateProductsOrder } = useProducts();
   const [isAdding, setIsAdding] = useState(false);
   const [editingProduct, setEditingProduct] = useState<StreamingService | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
   const [productToDelete, setProductToDelete] = useState<StreamingService | null>(null);
   const { toast } = useToast();
 
@@ -60,7 +54,6 @@ export default function AdminProductsPage() {
   const [formData, setFormData] = useState({
     name: "",
     price: "",
-    description: "",
     imageUrl: "",
     features: [] as string[]
   });
@@ -68,7 +61,6 @@ export default function AdminProductsPage() {
   const [editFormData, setEditFormData] = useState({
     name: "",
     price: "",
-    description: "",
     imageUrl: "",
     features: [] as string[],
     active: true
@@ -80,38 +72,12 @@ export default function AdminProductsPage() {
       setEditFormData({
         name: editingProduct.name,
         price: editingProduct.price.toString(),
-        description: editingProduct.description,
         imageUrl: editingProduct.imageUrl,
         features: [...editingProduct.features],
         active: editingProduct.active
       });
     }
   }, [editingProduct]);
-
-  const handleAiGenerate = async (mode: 'add' | 'edit') => {
-    const name = mode === 'add' ? formData.name : editFormData.name;
-    if (!name) {
-      toast({ title: "Erro", description: "Insira o nome do produto primeiro.", variant: "destructive" });
-      return;
-    }
-
-    setIsGenerating(true);
-    try {
-      const result = await generateProductDescription({ 
-        productDetails: `${name}, premium streaming, multiple profiles, ultra HD quality` 
-      });
-      if (mode === 'add') {
-        setFormData({ ...formData, description: result.description });
-      } else {
-        setEditFormData({ ...editFormData, description: result.description });
-      }
-      toast({ title: "Sucesso", description: "Descrição gerada com IA!" });
-    } catch (error) {
-      toast({ title: "Erro", description: "Falha ao gerar descrição.", variant: "destructive" });
-    } finally {
-      setIsGenerating(false);
-    }
-  };
 
   const addFeature = (mode: 'add' | 'edit') => {
     if (mode === 'add') {
@@ -167,7 +133,7 @@ export default function AdminProductsPage() {
       id: Math.random().toString(36).substr(2, 9),
       name: formData.name,
       price: parseFloat(formData.price),
-      description: formData.description,
+      description: "",
       stock: 0,
       features: formData.features.length > 0 ? formData.features : ["Acesso imediato", "Suporte 24h"],
       imageUrl: formData.imageUrl,
@@ -177,7 +143,7 @@ export default function AdminProductsPage() {
     addProduct(newProduct);
     toast({ title: "Produto Salvo", description: `${formData.name} foi adicionado.` });
     setIsAdding(false);
-    setFormData({ name: "", price: "", description: "", imageUrl: "", features: [] });
+    setFormData({ name: "", price: "", imageUrl: "", features: [] });
   };
 
   const handleUpdateProduct = () => {
@@ -191,7 +157,7 @@ export default function AdminProductsPage() {
       ...editingProduct,
       name: editFormData.name,
       price: parseFloat(editFormData.price),
-      description: editFormData.description,
+      description: editingProduct.description,
       imageUrl: editFormData.imageUrl,
       features: editFormData.features,
       active: editFormData.active
@@ -261,15 +227,6 @@ export default function AdminProductsPage() {
                     )}
                   </Droppable>
                 </DragDropContext>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Descrição</Label>
-                  <Button variant="ghost" size="sm" className="h-8 gap-1 text-primary hover:bg-primary/5 font-bold" onClick={() => handleAiGenerate('add')} disabled={isGenerating}>
-                    {isGenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />} Gerar com IA
-                  </Button>
-                </div>
-                <Textarea id="description" rows={3} placeholder="Descreva as vantagens..." className="bg-background border-border rounded-xl" value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} />
               </div>
             </div>
             <DialogFooter className="gap-2">
@@ -343,7 +300,9 @@ export default function AdminProductsPage() {
                 <Label className="text-sm font-bold uppercase tracking-wider">Status do Serviço</Label>
                 <p className="text-[10px] text-muted-foreground">Define se o produto aparece na vitrine.</p>
               </div>
-              <Switch checked={editFormData.active} onCheckedChange={(val) => setEditFormData({...editFormData, active: val})} />
+              <span className="relative flex items-center h-6">
+                <Switch checked={editFormData.active} onCheckedChange={(val) => setEditFormData({...editFormData, active: val})} />
+              </span>
             </div>
             <div className="space-y-2">
               <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Nome do Serviço</Label>
@@ -383,15 +342,6 @@ export default function AdminProductsPage() {
                 </Droppable>
               </DragDropContext>
             </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Descrição</Label>
-                <Button variant="ghost" size="sm" className="h-8 gap-1 text-primary hover:bg-primary/5 font-bold" onClick={() => handleAiGenerate('edit')} disabled={isGenerating}>
-                  {isGenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />} Gerar com IA
-                </Button>
-              </div>
-              <Textarea rows={3} className="bg-background border-border rounded-xl" value={editFormData.description} onChange={(e) => setEditFormData({...editFormData, description: e.target.value})} />
-            </div>
           </div>
           <DialogFooter className="gap-2">
             <Button variant="outline" className="rounded-xl h-12 font-bold flex-1" onClick={() => setEditingProduct(null)}>CANCELAR</Button>
@@ -416,4 +366,3 @@ export default function AdminProductsPage() {
     </div>
   );
 }
-
