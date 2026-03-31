@@ -31,7 +31,7 @@ export default function Home() {
       <Navbar />
       
       {/* Hero Section */}
-      <section className="relative pt-10 pb-6 overflow-hidden flex items-center">
+      <section className="relative pt-24 pb-4 overflow-hidden flex items-center">
         <div className="absolute inset-0 -z-10 opacity-40">
           <Image 
             src={heroImg} 
@@ -52,7 +52,7 @@ export default function Home() {
             STREAMING SEM <br />
             <span className="text-primary italic">LIMITES.</span>
           </h1>
-          <p className="text-base sm:text-xl text-muted-foreground mb-10 max-w-lg mx-auto font-body leading-relaxed px-4">
+          <p className="text-base sm:text-xl text-muted-foreground mb-8 max-w-lg mx-auto font-body leading-relaxed px-4">
             Acesso instantâneo às melhores plataformas do mundo. Sem burocracia e com a confiança da <span className="pj-text">PJ</span> <span className="contas-text">CONTAS</span>.
           </p>
           <div className="flex flex-col gap-4 px-6 sm:flex-row sm:justify-center">
