@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -22,17 +21,20 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setLoading(true);
 
-    // Pequeno delay para simular processamento e melhorar UX
+    // Delay para simular processamento e melhorar UX mobile
     setTimeout(() => {
       if (password === "Ae@1234Br") {
         sessionStorage.setItem("pj_contas_admin_auth", "true");
-        toast({ title: "Acesso Autorizado", description: "Bem-vindo ao painel PJ CONTAS." });
+        toast({ 
+          title: "Acesso Autorizado", 
+          description: "Bem-vindo ao painel PJ CONTAS.",
+        });
         router.push("/admin");
       } else {
         setLoading(false);
         toast({ 
           title: "Senha Incorreta", 
-          description: "Verifique a senha e tente novamente.", 
+          description: "O acesso foi negado. Verifique a senha e tente novamente.", 
           variant: "destructive" 
         });
       }
@@ -58,7 +60,7 @@ export default function AdminLoginPage() {
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input 
                   type="password" 
-                  placeholder="Digite a senha de acesso" 
+                  placeholder="Senha de Acesso" 
                   className="pl-12 h-14 bg-background border-white/5 rounded-xl text-center font-bold tracking-[0.3em]"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
