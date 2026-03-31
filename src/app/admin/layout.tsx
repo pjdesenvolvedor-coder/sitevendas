@@ -1,19 +1,21 @@
+
 "use client";
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { 
   LayoutDashboard, 
   Package, 
   ShoppingBag, 
   Settings, 
   LogOut, 
-  Menu
+  Menu,
+  Loader2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 
@@ -26,8 +28,34 @@ const NAV_ITEMS = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [isAuth, setIsAuth] = useState<boolean | null>(null);
+  
   const logoImg = PlaceHolderImages.find(img => img.id === 'logo')?.imageUrl || '';
+
+  useEffect(() => {
+    // Verificação simples de autenticação via sessionStorage
+    const auth = sessionStorage.getItem("pj_contas_admin_auth");
+    if (auth !== "true") {
+      router.push("/adm");
+    } else {
+      setIsAuth(true);
+    }
+  }, [router]);
+
+  const handleLogout = () => {
+    sessionStorage.removeItem("pj_contas_admin_auth");
+    router.push("/");
+  };
+
+  if (isAuth === null) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-10 h-10 text-primary animate-spin" />
+      </div>
+    );
+  }
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full bg-card border-r border-white/5">
@@ -35,7 +63,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="relative w-8 h-8">
           <Image src={logoImg} alt="Logo" fill className="object-contain" />
         </div>
-        <span className="text-2xl font-headline font-bold">
+        <span className="text-2xl font-headline font-bold tracking-tight">
           <span className="text-primary">PJ</span> <span className="text-white">CONTAS</span>
         </span>
       </div>
@@ -63,12 +91,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </nav>
 
       <div className="p-6 border-t border-white/5">
-        <Link href="/">
-          <Button variant="ghost" className="w-full justify-start gap-4 py-8 rounded-2xl text-muted-foreground hover:text-red-500 hover:bg-red-500/5">
-            <LogOut className="w-6 h-6" />
-            <span className="font-bold uppercase tracking-widest text-xs">Sair do Painel</span>
-          </Button>
-        </Link>
+        <Button 
+          variant="ghost" 
+          className="w-full justify-start gap-4 py-8 rounded-2xl text-muted-foreground hover:text-red-500 hover:bg-red-500/5"
+          onClick={handleLogout}
+        >
+          <LogOut className="w-6 h-6" />
+          <span className="font-bold uppercase tracking-widest text-xs">Sair do Painel</span>
+        </Button>
       </div>
     </div>
   );

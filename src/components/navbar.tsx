@@ -1,8 +1,9 @@
+
 "use client";
 
 import Link from "next/link";
 import Image from "next/image";
-import { UserCog, ShoppingBag } from "lucide-react";
+import { ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 
@@ -28,11 +29,6 @@ export function Navbar() {
         </Link>
 
         <div className="flex items-center gap-3">
-          <Link href="/admin">
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary h-12 w-12 rounded-xl bg-white/5 border border-white/5">
-              <UserCog className="w-6 h-6" />
-            </Button>
-          </Link>
           <Button size="sm" className="bg-primary hover:bg-primary/90 text-white font-bold h-12 px-6 rounded-xl text-xs shadow-xl shadow-primary/20 uppercase tracking-widest hidden sm:flex">
             CATÁLOGO
           </Button>
