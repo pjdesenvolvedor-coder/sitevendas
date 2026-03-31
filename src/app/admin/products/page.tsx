@@ -56,6 +56,7 @@ export default function AdminProductsPage() {
   const [formData, setFormData] = useState({
     name: "",
     price: "",
+    originalPrice: "",
     imageUrl: "",
     features: [] as string[],
     isPromotion: false
@@ -64,6 +65,7 @@ export default function AdminProductsPage() {
   const [editFormData, setEditFormData] = useState({
     name: "",
     price: "",
+    originalPrice: "",
     imageUrl: "",
     features: [] as string[],
     active: true,
@@ -76,6 +78,7 @@ export default function AdminProductsPage() {
       setEditFormData({
         name: editingProduct.name,
         price: editingProduct.price.toString(),
+        originalPrice: editingProduct.originalPrice?.toString() || "",
         imageUrl: editingProduct.imageUrl,
         features: [...editingProduct.features],
         active: editingProduct.active,
@@ -138,6 +141,7 @@ export default function AdminProductsPage() {
       id: Math.random().toString(36).substr(2, 9),
       name: formData.name,
       price: parseFloat(formData.price),
+      originalPrice: formData.isPromotion && formData.originalPrice ? parseFloat(formData.originalPrice) : undefined,
       description: "",
       stock: 0,
       features: formData.features.length > 0 ? formData.features : ["Acesso imediato", "Suporte 24h"],
@@ -149,7 +153,7 @@ export default function AdminProductsPage() {
     addProduct(newProduct);
     toast({ title: "Produto Salvo", description: `${formData.name} foi adicionado.` });
     setIsAdding(false);
-    setFormData({ name: "", price: "", imageUrl: "", features: [], isPromotion: false });
+    setFormData({ name: "", price: "", originalPrice: "", imageUrl: "", features: [], isPromotion: false });
   };
 
   const handleUpdateProduct = () => {
@@ -163,6 +167,7 @@ export default function AdminProductsPage() {
       ...editingProduct,
       name: editFormData.name,
       price: parseFloat(editFormData.price),
+      originalPrice: editFormData.isPromotion && editFormData.originalPrice ? parseFloat(editFormData.originalPrice) : undefined,
       description: editingProduct.description,
       imageUrl: editFormData.imageUrl,
       features: editFormData.features,
@@ -213,10 +218,20 @@ export default function AdminProductsPage() {
                   <Input placeholder="https://exemplo.com/imagem.jpg" className="bg-background border-border h-12 rounded-xl pl-12" value={formData.imageUrl} onChange={(e) => setFormData({...formData, imageUrl: e.target.value})} />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Preço (R$)</Label>
-                <Input type="number" placeholder="19.90" className="bg-background border-border h-12 rounded-xl" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} />
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Preço de Venda (R$)</Label>
+                  <Input type="number" placeholder="19.90" className="bg-background border-border h-12 rounded-xl" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} />
+                </div>
+                {formData.isPromotion && (
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-bold uppercase tracking-wider text-primary">Preço Original (R$)</Label>
+                    <Input type="number" placeholder="29.90" className="bg-background border-primary/30 h-12 rounded-xl" value={formData.originalPrice} onChange={(e) => setFormData({...formData, originalPrice: e.target.value})} />
+                  </div>
+                )}
               </div>
+
               <div className="space-y-3">
                 <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Vantagens (Arraste para ordenar)</Label>
                 <div className="flex gap-2">
@@ -284,7 +299,10 @@ export default function AdminProductsPage() {
                               </div>
                               <div className="flex items-center gap-6">
                                 <div className="flex flex-col text-right">
-                                  <span className="font-bold text-primary text-sm">R$ {product.price.toFixed(2)}</span>
+                                  <div className="flex items-center gap-2 justify-end">
+                                    {product.originalPrice && <span className="text-[10px] text-muted-foreground line-through">R$ {product.originalPrice.toFixed(2)}</span>}
+                                    <span className="font-bold text-primary text-sm">R$ {product.price.toFixed(2)}</span>
+                                  </div>
                                   <span className={`text-[10px] ${product.stock < 2 ? 'text-red-500 font-bold' : 'text-muted-foreground'}`}>{product.stock} un.</span>
                                 </div>
                                 <Badge className={product.active ? "bg-green-500/20 text-green-500 border-none" : "bg-muted text-muted-foreground"}>{product.active ? "Ativo" : "Inativo"}</Badge>
@@ -344,10 +362,20 @@ export default function AdminProductsPage() {
               <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">URL da Imagem</Label>
               <Input className="bg-background border-border h-12 rounded-xl" value={editFormData.imageUrl} onChange={(e) => setEditFormData({...editFormData, imageUrl: e.target.value})} />
             </div>
-            <div className="space-y-2">
-              <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Preço (R$)</Label>
-              <Input type="number" className="bg-background border-border h-12 rounded-xl" value={editFormData.price} onChange={(e) => setEditFormData({...editFormData, price: e.target.value})} />
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Preço de Venda (R$)</Label>
+                <Input type="number" className="bg-background border-border h-12 rounded-xl" value={editFormData.price} onChange={(e) => setEditFormData({...editFormData, price: e.target.value})} />
+              </div>
+              {editFormData.isPromotion && (
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-bold uppercase tracking-wider text-primary">Preço Original (R$)</Label>
+                  <Input type="number" placeholder="Opcional" className="bg-background border-primary/30 h-12 rounded-xl" value={editFormData.originalPrice} onChange={(e) => setEditFormData({...editFormData, originalPrice: e.target.value})} />
+                </div>
+              )}
             </div>
+
             <div className="space-y-3">
               <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Vantagens (Arraste para ordenar)</Label>
               <div className="flex gap-2">

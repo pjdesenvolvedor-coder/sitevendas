@@ -119,9 +119,16 @@ export default function Home() {
                     </div>
                     <div className="p-6">
                       <h3 className="text-2xl font-headline font-bold mb-2 uppercase">{product.name}</h3>
-                      <div className="flex items-baseline gap-2 mb-6">
-                        <span className="text-3xl font-headline font-bold text-primary">R$ {product.price.toFixed(2)}</span>
-                        <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">/ mensal</span>
+                      <div className="flex flex-col mb-6">
+                        {product.originalPrice && (
+                          <span className="text-sm text-muted-foreground line-through decoration-primary decoration-2">
+                            De: R$ {product.originalPrice.toFixed(2)}
+                          </span>
+                        )}
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-[10px] text-primary font-bold uppercase tracking-widest">Por:</span>
+                          <span className="text-3xl font-headline font-bold text-white">R$ {product.price.toFixed(2)}</span>
+                        </div>
                       </div>
                       {hasStock ? (
                         <Link href={`/checkout/${product.id}`} className="w-full">

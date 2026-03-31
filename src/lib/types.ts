@@ -13,6 +13,7 @@ export type StreamingService = {
   id: string;
   name: string;
   price: number;
+  originalPrice?: number;
   description: string;
   features: string[];
   stock: number;
