@@ -18,7 +18,10 @@ import {
   Phone, 
   Plus, 
   Trash2,
-  ChevronDown
+  ChevronDown,
+  Copy,
+  CheckCircle2,
+  Zap
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
@@ -29,6 +32,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { createPixAction, checkPixStatusAction, PixResponse } from "@/lib/payment-actions";
+import Image from "next/image";
 
 export default function CheckoutPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -37,10 +42,37 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
   
   const [selectedProducts, setSelectedProducts] = useState<StreamingService[]>([]);
   const [loading, setLoading] = useState(false);
+  const [pixData, setPixData] = useState<PixResponse | null>(null);
+  const [paymentStatus, setPaymentStatus] = useState<'idle' | 'pending' | 'paid'>('idle');
+  const [copied, setCopied] = useState(false);
+  
   const [formData, setFormData] = useState({
     fullName: "",
     phone: ""
   });
+
+  // Polling para verificar status do pagamento
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    if (paymentStatus === 'pending' && pixData?.id) {
+      interval = setInterval(async () => {
+        const result = await checkPixStatusAction(pixData.id);
+        if (result.status === 'paid') {
+          setPaymentStatus('paid');
+          clearInterval(interval);
+          toast({
+            title: "Pagamento Confirmado!",
+            description: "Seu acesso está sendo liberado.",
+          });
+        }
+      }, 5000); // Verifica a cada 5 segundos
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [paymentStatus, pixData?.id, toast]);
 
   useEffect(() => {
     const initialProduct = products.find(p => p.id === resolvedParams.id);
@@ -60,6 +92,8 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
       return;
     }
     setSelectedProducts([...selectedProducts, product]);
+    setPixData(null); // Resetar PIX se o carrinho mudar
+    setPaymentStatus('idle');
     toast({ title: "Produto Adicionado", description: `${product.name} foi incluído no pedido.` });
   };
 
@@ -69,11 +103,13 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
       return;
     }
     setSelectedProducts(selectedProducts.filter(p => p.id !== id));
+    setPixData(null);
+    setPaymentStatus('idle');
   };
 
   const totalValue = selectedProducts.reduce((acc, p) => acc + p.price, 0);
 
-  const handleCheckout = (e: React.FormEvent) => {
+  const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.fullName || !formData.phone) {
       toast({ 
@@ -85,13 +121,32 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
     }
     
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      const pix = await createPixAction(totalValue);
+      setPixData(pix);
+      setPaymentStatus('pending');
       toast({ 
-        title: "Pedido Gerado!", 
-        description: "Seu código PIX foi gerado e enviado para o seu WhatsApp.",
+        title: "PIX Gerado!", 
+        description: "Efetue o pagamento para liberar seu acesso.",
       });
-    }, 2000);
+    } catch (error) {
+      toast({ 
+        title: "Erro ao gerar PIX", 
+        description: "Tente novamente em instantes.", 
+        variant: "destructive" 
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const copyToClipboard = () => {
+    if (pixData?.qr_code) {
+      navigator.clipboard.writeText(pixData.qr_code);
+      setCopied(true);
+      toast({ title: "Copiado!", description: "Código PIX copiado para a área de transferência." });
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   const availableToAdd = products.filter(p => 
@@ -124,15 +179,13 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
                         <span className="text-xl font-headline font-bold text-primary">R$ {product.price.toFixed(2)}</span>
                         <p className="text-[8px] text-muted-foreground uppercase font-bold">por mês</p>
                       </div>
-                      {selectedProducts.length > 1 && (
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="text-muted-foreground hover:text-red-500 hover:bg-red-500/10"
+                      {selectedProducts.length > 1 && paymentStatus === 'idle' && (
+                        <button 
+                          className="text-muted-foreground hover:text-red-500 transition-colors"
                           onClick={() => handleRemoveProduct(product.id)}
                         >
                           <Trash2 className="w-4 h-4" />
-                        </Button>
+                        </button>
                       )}
                     </div>
                   </div>
@@ -141,117 +194,189 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
             ))}
           </div>
 
-          <div className="flex justify-center">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="default" className="bg-primary hover:bg-primary/90 text-white font-bold h-10 px-6 rounded-xl text-xs uppercase tracking-widest gap-2">
-                  <Plus className="w-4 h-4" />
-                  Adicionar Produto
-                  <ChevronDown className="w-4 h-4 ml-1 opacity-50" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-card border-white/10 w-64 p-2 rounded-xl">
-                {availableToAdd.map(product => (
-                  <DropdownMenuItem 
-                    key={product.id} 
-                    className="flex justify-between items-center p-3 rounded-lg cursor-pointer hover:bg-primary/10 group"
-                    onClick={() => handleAddProduct(product)}
-                  >
-                    <div className="flex flex-col">
-                      <span className="font-bold text-sm text-white group-hover:text-primary">{product.name}</span>
-                      <span className="text-[8px] text-muted-foreground uppercase font-bold">Assinatura Mensal</span>
-                    </div>
-                    <span className="text-xs font-bold text-primary">R$ {product.price.toFixed(2)}</span>
-                  </DropdownMenuItem>
-                ))}
-                {availableToAdd.length === 0 && (
-                  <div className="p-3 text-center text-xs text-muted-foreground italic">Nenhum outro produto disponível no momento</div>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          {paymentStatus === 'idle' && (
+            <div className="flex justify-center">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="default" className="bg-primary hover:bg-primary/90 text-white font-bold h-10 px-6 rounded-xl text-xs uppercase tracking-widest gap-2">
+                    <Plus className="w-4 h-4" />
+                    Adicionar Produto
+                    <ChevronDown className="w-4 h-4 ml-1 opacity-50" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-card border-white/10 w-64 p-2 rounded-xl">
+                  {availableToAdd.map(product => (
+                    <DropdownMenuItem 
+                      key={product.id} 
+                      className="flex justify-between items-center p-3 rounded-lg cursor-pointer hover:bg-primary/10 group"
+                      onClick={() => handleAddProduct(product)}
+                    >
+                      <div className="flex flex-col">
+                        <span className="font-bold text-sm text-white group-hover:text-primary">{product.name}</span>
+                        <span className="text-[8px] text-muted-foreground uppercase font-bold">Assinatura Mensal</span>
+                      </div>
+                      <span className="text-xs font-bold text-primary">R$ {product.price.toFixed(2)}</span>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
 
           <div className="bg-card/30 border border-white/5 p-6 rounded-2xl flex justify-between items-center">
             <div className="flex flex-col">
               <span className="font-headline text-xl text-muted-foreground uppercase tracking-widest">Valor Total</span>
-              <span className="text-[10px] text-primary font-bold uppercase">Pagamento Recorrente Mensal</span>
+              <span className="text-[10px] text-primary font-bold uppercase">Pagamento Único (Mensalidade)</span>
             </div>
             <span className="font-headline text-4xl text-primary">R$ {totalValue.toFixed(2)}</span>
           </div>
 
-          <Card className="bg-card/50 border-white/5 rounded-[2.5rem] shadow-2xl backdrop-blur-xl">
-            <CardHeader className="pt-8 text-center">
-              <CardTitle className="font-headline text-3xl uppercase tracking-normal">Dados do Cliente</CardTitle>
-              <p className="text-xs text-muted-foreground uppercase tracking-widest font-bold">Informações para entrega do acesso</p>
-            </CardHeader>
-            <CardContent className="px-8 pb-10">
-              <form onSubmit={handleCheckout} className="space-y-5">
-                <div className="space-y-2">
-                  <Label htmlFor="fullName" className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] ml-1">
-                    Nome Completo
-                  </Label>
-                  <div className="relative">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input 
-                      id="fullName" 
-                      placeholder="Ex: João Silva"
-                      className="bg-background border-white/5 h-14 pl-12 rounded-xl focus:ring-primary"
-                      required
-                      value={formData.fullName}
-                      onChange={(e) => setFormData({...formData, fullName: e.target.value})}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] ml-1">
-                    WhatsApp / Contato
-                  </Label>
-                  <div className="relative">
-                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input 
-                      id="phone" 
-                      type="tel" 
-                      placeholder="(00) 00000-0000"
-                      className="bg-background border-white/5 h-14 pl-12 rounded-xl focus:ring-primary"
-                      required
-                      value={formData.phone}
-                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                    />
-                  </div>
-                </div>
-
-                <Separator className="bg-white/5 my-6" />
-
-                <div className="space-y-4">
-                  <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] ml-1">
-                    Forma de Pagamento
-                  </Label>
-                  <div className="flex items-center gap-4 rounded-2xl border-2 border-primary bg-primary/5 p-5 transition-all">
-                    <div className="bg-primary p-2 rounded-lg">
-                      <QrCode className="h-6 w-6 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <span className="block font-bold text-sm uppercase tracking-widest text-white">PIX Automático</span>
-                      <span className="text-[10px] text-muted-foreground uppercase font-bold">Liberação imediata após o pagamento</span>
+          {paymentStatus === 'idle' ? (
+            <Card className="bg-card/50 border-white/5 rounded-[2.5rem] shadow-2xl backdrop-blur-xl">
+              <CardHeader className="pt-8 text-center">
+                <CardTitle className="font-headline text-3xl uppercase tracking-normal">Dados do Cliente</CardTitle>
+                <p className="text-xs text-muted-foreground uppercase tracking-widest font-bold">Informações para entrega do acesso</p>
+              </CardHeader>
+              <CardContent className="px-8 pb-10">
+                <form onSubmit={handleCheckout} className="space-y-5">
+                  <div className="space-y-2">
+                    <Label htmlFor="fullName" className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] ml-1">
+                      Nome Completo
+                    </Label>
+                    <div className="relative">
+                      <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input 
+                        id="fullName" 
+                        placeholder="Ex: João Silva"
+                        className="bg-background border-white/5 h-14 pl-12 rounded-xl focus:ring-primary"
+                        required
+                        value={formData.fullName}
+                        onChange={(e) => setFormData({...formData, fullName: e.target.value})}
+                      />
                     </div>
                   </div>
-                </div>
 
-                <Button 
-                  type="submit" 
-                  className="w-full bg-primary hover:bg-primary/90 text-white font-bold h-16 text-lg rounded-2xl shadow-2xl shadow-primary/20 mt-6 uppercase tracking-widest"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <Loader2 className="w-6 h-6 animate-spin" />
-                  ) : (
-                    <>GERAR CÓDIGO PIX</>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone" className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] ml-1">
+                      WhatsApp / Contato
+                    </Label>
+                    <div className="relative">
+                      <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input 
+                        id="phone" 
+                        type="tel" 
+                        placeholder="(00) 00000-0000"
+                        className="bg-background border-white/5 h-14 pl-12 rounded-xl focus:ring-primary"
+                        required
+                        value={formData.phone}
+                        onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                      />
+                    </div>
+                  </div>
+
+                  <Separator className="bg-white/5 my-6" />
+
+                  <div className="space-y-4">
+                    <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] ml-1">
+                      Forma de Pagamento
+                    </Label>
+                    <div className="flex items-center gap-4 rounded-2xl border-2 border-primary bg-primary/5 p-5 transition-all">
+                      <div className="bg-primary p-2 rounded-lg">
+                        <QrCode className="h-6 w-6 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <span className="block font-bold text-sm uppercase tracking-widest text-white">PIX Automático</span>
+                        <span className="text-[10px] text-muted-foreground uppercase font-bold">Liberação imediata após o pagamento</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-primary hover:bg-primary/90 text-white font-bold h-16 text-lg rounded-2xl shadow-2xl shadow-primary/20 mt-6 uppercase tracking-widest"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <Loader2 className="w-6 h-6 animate-spin" />
+                    ) : (
+                      <>GERAR CÓDIGO PIX</>
+                    )}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          ) : paymentStatus === 'pending' && pixData ? (
+            <Card className="bg-card/50 border-primary/20 border-2 rounded-[2.5rem] shadow-2xl backdrop-blur-xl overflow-hidden">
+              <div className="bg-primary/10 py-4 text-center border-b border-primary/20">
+                <span className="text-[10px] font-bold text-primary uppercase tracking-[0.3em] animate-pulse">
+                  Aguardando Pagamento...
+                </span>
+              </div>
+              <CardContent className="p-8 flex flex-col items-center gap-8">
+                <div className="bg-white p-4 rounded-3xl shadow-2xl">
+                  {pixData.qr_code_base64 && (
+                    <Image 
+                      src={`data:image/png;base64,${pixData.qr_code_base64}`}
+                      alt="PIX QR Code"
+                      width={280}
+                      height={280}
+                      className="rounded-xl"
+                    />
                   )}
+                </div>
+
+                <div className="w-full space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Código Copia e Cola</Label>
+                    <div className="relative group">
+                      <div className="bg-background border border-white/10 rounded-xl p-4 pr-16 text-xs font-mono break-all line-clamp-2 text-muted-foreground">
+                        {pixData.qr_code}
+                      </div>
+                      <Button 
+                        onClick={copyToClipboard}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 h-10 w-10 bg-primary hover:bg-primary/90 rounded-lg shadow-lg"
+                      >
+                        {copied ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                      </Button>
+                    </div>
+                  </div>
+
+                  <Button 
+                    onClick={copyToClipboard}
+                    className="w-full h-14 bg-primary hover:bg-primary/90 font-bold uppercase tracking-widest rounded-xl text-xs gap-2"
+                  >
+                    <Copy className="w-4 h-4" />
+                    Copiar Código PIX
+                  </Button>
+
+                  <p className="text-[9px] text-center text-muted-foreground uppercase font-medium leading-relaxed">
+                    Após o pagamento, o sistema identificará automaticamente <br /> e liberará seu acesso em instantes.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          ) : paymentStatus === 'paid' && (
+            <Card className="bg-card/50 border-green-500/30 border-2 rounded-[2.5rem] shadow-2xl backdrop-blur-xl overflow-hidden py-12 px-8 text-center">
+              <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <CheckCircle2 className="w-10 h-10 text-green-500" />
+              </div>
+              <h2 className="font-headline text-4xl text-white mb-2">PAGAMENTO APROVADO!</h2>
+              <p className="text-muted-foreground text-sm uppercase tracking-widest font-bold mb-8">Obrigado pela preferência.</p>
+              
+              <div className="bg-primary/5 border border-primary/20 rounded-2xl p-6 mb-8">
+                <Zap className="w-8 h-8 text-primary mx-auto mb-4" />
+                <p className="text-xs text-white uppercase font-bold tracking-widest">
+                  Suas credenciais de acesso foram enviadas <br /> para o seu WhatsApp cadastrado.
+                </p>
+              </div>
+
+              <Link href="/">
+                <Button className="bg-white text-black hover:bg-white/90 font-bold h-14 w-full rounded-xl uppercase tracking-widest">
+                  Voltar ao Início
                 </Button>
-              </form>
-            </CardContent>
-          </Card>
+              </Link>
+            </Card>
+          )}
 
           <div className="flex flex-col items-center gap-6 py-8 opacity-40">
             <div className="flex gap-6">
