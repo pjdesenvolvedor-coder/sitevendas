@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -12,7 +13,8 @@ import {
   GripVertical,
   Tv,
   Link as LinkIcon,
-  Pencil
+  Pencil,
+  Tag
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -55,7 +57,8 @@ export default function AdminProductsPage() {
     name: "",
     price: "",
     imageUrl: "",
-    features: [] as string[]
+    features: [] as string[],
+    isPromotion: false
   });
 
   const [editFormData, setEditFormData] = useState({
@@ -63,7 +66,8 @@ export default function AdminProductsPage() {
     price: "",
     imageUrl: "",
     features: [] as string[],
-    active: true
+    active: true,
+    isPromotion: false
   });
   const [newEditFeature, setNewEditFeature] = useState("");
 
@@ -74,7 +78,8 @@ export default function AdminProductsPage() {
         price: editingProduct.price.toString(),
         imageUrl: editingProduct.imageUrl,
         features: [...editingProduct.features],
-        active: editingProduct.active
+        active: editingProduct.active,
+        isPromotion: editingProduct.isPromotion || false
       });
     }
   }, [editingProduct]);
@@ -138,12 +143,13 @@ export default function AdminProductsPage() {
       features: formData.features.length > 0 ? formData.features : ["Acesso imediato", "Suporte 24h"],
       imageUrl: formData.imageUrl,
       active: true,
+      isPromotion: formData.isPromotion,
     };
 
     addProduct(newProduct);
     toast({ title: "Produto Salvo", description: `${formData.name} foi adicionado.` });
     setIsAdding(false);
-    setFormData({ name: "", price: "", imageUrl: "", features: [] });
+    setFormData({ name: "", price: "", imageUrl: "", features: [], isPromotion: false });
   };
 
   const handleUpdateProduct = () => {
@@ -160,7 +166,8 @@ export default function AdminProductsPage() {
       description: editingProduct.description,
       imageUrl: editFormData.imageUrl,
       features: editFormData.features,
-      active: editFormData.active
+      active: editFormData.active,
+      isPromotion: editFormData.isPromotion
     });
 
     toast({ title: "Produto Atualizado", description: "Alterações salvas com sucesso." });
@@ -187,6 +194,14 @@ export default function AdminProductsPage() {
               <DialogTitle className="font-headline text-2xl uppercase tracking-normal">Novo Serviço</DialogTitle>
             </DialogHeader>
             <div className="grid gap-6 py-4">
+              <div className="flex items-center justify-between p-4 bg-primary/5 rounded-xl border border-primary/20">
+                <div className="flex flex-col gap-1">
+                  <Label className="text-sm font-bold uppercase tracking-wider text-primary">Promoção do Dia</Label>
+                  <p className="text-[10px] text-muted-foreground">Destaca o produto em uma vitrine especial no topo.</p>
+                </div>
+                <Switch checked={formData.isPromotion} onCheckedChange={(val) => setFormData({...formData, isPromotion: val})} />
+              </div>
+
               <div className="space-y-2">
                 <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Nome do Serviço</Label>
                 <Input placeholder="Ex: Netflix Premium 4K" className="bg-background border-border h-12 rounded-xl" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
@@ -253,9 +268,17 @@ export default function AdminProductsPage() {
                               <div className="flex items-center gap-3">
                                 <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-primary/10">
                                   {product.imageUrl ? <Image src={product.imageUrl} alt={product.name} fill className="object-cover" /> : <Tv className="w-5 h-5 text-primary absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" />}
+                                  {product.isPromotion && (
+                                    <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                                      <Tag className="w-6 h-6 text-primary animate-pulse" />
+                                    </div>
+                                  )}
                                 </div>
                                 <div className="flex flex-col">
-                                  <span className="font-bold text-sm">{product.name}</span>
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-bold text-sm">{product.name}</span>
+                                    {product.isPromotion && <Badge className="bg-primary text-white text-[8px] h-4 uppercase">Promo</Badge>}
+                                  </div>
                                   <span className="text-[10px] text-muted-foreground uppercase truncate max-w-[150px]">{product.imageUrl}</span>
                                 </div>
                               </div>
@@ -295,15 +318,24 @@ export default function AdminProductsPage() {
             <DialogTitle className="font-headline text-2xl uppercase tracking-normal">Editar {editingProduct?.name}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-6 py-4">
-            <div className="flex items-center justify-between p-4 bg-muted/20 rounded-xl border border-border/50">
-              <div className="flex flex-col gap-1">
-                <Label className="text-sm font-bold uppercase tracking-wider">Status do Serviço</Label>
-                <p className="text-[10px] text-muted-foreground">Define se o produto aparece na vitrine.</p>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between p-4 bg-primary/5 rounded-xl border border-primary/20">
+                <div className="flex flex-col gap-1">
+                  <Label className="text-sm font-bold uppercase tracking-wider text-primary">Promoção do Dia</Label>
+                  <p className="text-[10px] text-muted-foreground">Destaca o produto em uma vitrine especial no topo.</p>
+                </div>
+                <Switch checked={editFormData.isPromotion} onCheckedChange={(val) => setEditFormData({...editFormData, isPromotion: val})} />
               </div>
-              <span className="relative flex items-center h-6">
+              
+              <div className="flex items-center justify-between p-4 bg-muted/20 rounded-xl border border-border/50">
+                <div className="flex flex-col gap-1">
+                  <Label className="text-sm font-bold uppercase tracking-wider">Status do Serviço</Label>
+                  <p className="text-[10px] text-muted-foreground">Define se o produto aparece na vitrine.</p>
+                </div>
                 <Switch checked={editFormData.active} onCheckedChange={(val) => setEditFormData({...editFormData, active: val})} />
-              </span>
+              </div>
             </div>
+
             <div className="space-y-2">
               <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Nome do Serviço</Label>
               <Input className="bg-background border-border h-12 rounded-xl" value={editFormData.name} onChange={(e) => setEditFormData({...editFormData, name: e.target.value})} />

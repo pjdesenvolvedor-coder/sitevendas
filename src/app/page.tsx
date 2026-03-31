@@ -9,7 +9,7 @@ import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Star, Zap, ShoppingCart, Tv, Play, Ban } from "lucide-react";
+import { CheckCircle2, Star, Zap, ShoppingCart, Tv, Play, Ban, Sparkles, ArrowRight } from "lucide-react";
 
 export default function Home() {
   const { products } = useProducts();
@@ -26,12 +26,15 @@ export default function Home() {
     }
   };
 
+  const promotionProducts = products.filter(p => p.active && p.isPromotion);
+  const regularProducts = products.filter(p => p.active);
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground overflow-x-hidden">
       <Navbar />
       
       {/* Hero Section */}
-      <section className="relative pt-20 pb-12 overflow-hidden flex items-center">
+      <section className="relative pt-24 pb-12 overflow-hidden flex items-center">
         <div className="absolute inset-0 -z-10 opacity-40">
           <Image 
             src={heroImg} 
@@ -86,6 +89,82 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Promotions Section */}
+      <section className="py-16 container mx-auto px-6">
+        <div className="flex items-center gap-4 mb-10">
+          <div className="p-3 bg-primary/10 rounded-2xl">
+            <Sparkles className="w-8 h-8 text-primary" />
+          </div>
+          <div>
+            <h2 className="text-4xl md:text-5xl font-headline font-bold uppercase tracking-normal">Promoções do dia</h2>
+            <p className="text-muted-foreground text-sm uppercase tracking-widest font-bold">Ofertas exclusivas por tempo limitado</p>
+          </div>
+        </div>
+
+        {promotionProducts.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {promotionProducts.map((product) => {
+              const hasStock = product.stock > 0;
+              return (
+                <Card key={product.id} className="group bg-primary/5 border-primary/20 hover:border-primary transition-all duration-500 rounded-[2rem] overflow-hidden relative">
+                  <div className="absolute top-4 left-4 z-10">
+                    <Badge className="bg-primary text-white font-bold animate-pulse">OFERTA ESPECIAL</Badge>
+                  </div>
+                  <CardContent className="p-0">
+                    <div className="relative h-48 w-full">
+                      {product.imageUrl && (
+                        <Image src={product.imageUrl} alt={product.name} fill className="object-cover transition-transform group-hover:scale-105" />
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent opacity-60"></div>
+                    </div>
+                    <div className="p-6">
+                      <h3 className="text-2xl font-headline font-bold mb-2 uppercase">{product.name}</h3>
+                      <div className="flex items-baseline gap-2 mb-6">
+                        <span className="text-3xl font-headline font-bold text-primary">R$ {product.price.toFixed(2)}</span>
+                        <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">/ mensal</span>
+                      </div>
+                      {hasStock ? (
+                        <Link href={`/checkout/${product.id}`} className="w-full">
+                          <Button className="w-full bg-primary hover:bg-primary/90 font-bold h-12 rounded-xl uppercase tracking-widest gap-2">
+                            <ShoppingCart className="w-4 h-4" />
+                            Aproveitar agora
+                          </Button>
+                        </Link>
+                      ) : (
+                        <Button disabled className="w-full bg-muted text-red-500 font-bold h-12 rounded-xl uppercase tracking-widest gap-2">
+                          <Ban className="w-4 h-4" />
+                          Sem Estoque
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        ) : (
+          <Card className="bg-card/30 border-dashed border-white/10 rounded-[2rem] p-12 text-center">
+            <div className="max-w-xs mx-auto space-y-6">
+              <div className="w-16 h-16 bg-muted/20 rounded-full flex items-center justify-center mx-auto">
+                <Sparkles className="w-8 h-8 text-muted-foreground" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white uppercase tracking-widest mb-2">Sem ofertas agora</h3>
+                <p className="text-sm text-muted-foreground">Fique de olho! Novas promoções podem surgir a qualquer momento.</p>
+              </div>
+              <Button 
+                variant="outline" 
+                className="w-full h-12 rounded-xl border-white/10 hover:bg-white/5 font-bold uppercase tracking-widest gap-2"
+                onClick={scrollToProducts}
+              >
+                Ver todos os produtos
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            </div>
+          </Card>
+        )}
+      </section>
+
       {/* Product Grid */}
       <section id="produtos" className="py-16 container mx-auto px-6">
         <div className="mb-12 text-center md:text-left">
@@ -97,7 +176,7 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-1 gap-8">
-          {products.filter(p => p.active).map((product) => {
+          {regularProducts.map((product) => {
             const hasStock = product.stock > 0;
             
             return (
@@ -151,8 +230,8 @@ export default function Home() {
                         </Button>
                       </Link>
                     ) : (
-                      <Button disabled className="bg-muted/50 text-primary w-full h-16 text-lg rounded-2xl font-bold gap-3 cursor-not-allowed uppercase tracking-[0.1em] border border-white/5">
-                        <Ban className="w-5 h-5 text-primary" />
+                      <Button disabled className="bg-muted/50 text-red-500 w-full h-16 text-lg rounded-2xl font-bold gap-3 cursor-not-allowed uppercase tracking-[0.1em] border border-white/5">
+                        <Ban className="w-5 h-5 text-red-500" />
                         SEM ESTOQUE
                       </Button>
                     )}
