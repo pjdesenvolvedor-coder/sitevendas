@@ -26,8 +26,11 @@ export default function Home() {
     }
   };
 
+  // Produtos que são promoção aparecem apenas na seção de Promoções
   const promotionProducts = products.filter(p => p.active && p.isPromotion);
-  const regularProducts = products.filter(p => p.active);
+  
+  // Produtos regulares são os ativos que NÃO são promoção
+  const regularProducts = products.filter(p => p.active && !p.isPromotion);
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground overflow-x-hidden">
@@ -139,7 +142,7 @@ export default function Home() {
                         </Link>
                       ) : (
                         <Button disabled className="w-full bg-muted text-red-500 font-bold h-12 rounded-xl uppercase tracking-widest gap-2">
-                          <Ban className="w-4 h-4" />
+                          <Ban className="w-4 h-4 text-red-500" />
                           Sem Estoque
                         </Button>
                       )}
