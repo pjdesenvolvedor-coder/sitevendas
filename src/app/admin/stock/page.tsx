@@ -9,142 +9,234 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { 
   Boxes, 
-  Save, 
+  Plus, 
   AlertTriangle, 
-  CheckCircle2, 
-  TrendingUp,
-  Tv
+  Trash2, 
+  Tv,
+  Mail,
+  Monitor,
+  Key
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter
+} from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from "@/components/ui/table";
 
 export default function AdminStockPage() {
-  const { products, updateProduct } = useProducts();
+  const { products, addCredential, removeCredential } = useProducts();
   const { toast } = useToast();
-  const [editingStock, setEditingStock] = useState<Record<string, string>>({});
+  
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    email: "",
+    screenName: "",
+    screenPassword: ""
+  });
 
-  const handleUpdateStock = (productId: string) => {
-    const newStockValue = editingStock[productId];
-    if (newStockValue === undefined || newStockValue === "") {
-      toast({ title: "Atenção", description: "Informe um valor para o estoque.", variant: "destructive" });
+  const handleAddAccount = () => {
+    if (!selectedProductId) return;
+    if (!formData.email || !formData.screenName) {
+      toast({ 
+        title: "Campos Incompletos", 
+        description: "Email e Tela são obrigatórios.", 
+        variant: "destructive" 
+      });
       return;
     }
 
-    const product = products.find(p => p.id === productId);
-    if (product) {
-      updateProduct({
-        ...product,
-        stock: parseInt(newStockValue)
-      });
-      toast({ 
-        title: "Estoque Atualizado", 
-        description: `${product.name} agora possui ${newStockValue} unidades.` 
-      });
-      // Limpa o estado de edição para este produto
-      const newEditingStock = { ...editingStock };
-      delete newEditingStock[productId];
-      setEditingStock(newEditingStock);
-    }
+    addCredential(selectedProductId, {
+      email: formData.email,
+      screenName: formData.screenName,
+      screenPassword: formData.screenPassword || undefined
+    });
+
+    toast({ title: "Conta Adicionada", description: "O estoque foi atualizado com sucesso." });
+    setFormData({ email: "", screenName: "", screenPassword: "" });
+    setSelectedProductId(null);
   };
 
-  const totalInventory = products.reduce((acc, p) => acc + p.stock, 0);
-  const lowStockCount = products.filter(p => p.stock < 10).length;
+  const totalInventory = products.reduce((acc, p) => acc + (p.credentials?.filter(c => !c.sold).length || 0), 0);
+  const lowStockCount = products.filter(p => (p.credentials?.filter(c => !c.sold).length || 0) < 5).length;
 
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-headline font-bold mb-2">Estoque</h1>
-        <p className="text-muted-foreground">Gerencie o volume de acessos disponíveis para cada plataforma.</p>
+        <h1 className="text-3xl font-headline font-bold mb-2">Estoque de Contas</h1>
+        <p className="text-muted-foreground">Cadastre as credenciais que serão enviadas automaticamente aos clientes.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="bg-card/50 border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Total em Estoque</CardTitle>
+            <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Total de Contas Disponíveis</CardTitle>
             <Boxes className="w-5 h-5 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{totalInventory} unidades</div>
-            <p className="text-[10px] text-muted-foreground uppercase mt-1">Soma de todos os produtos ativos</p>
+            <div className="text-3xl font-bold">{totalInventory} contas</div>
+            <p className="text-[10px] text-muted-foreground uppercase mt-1">Prontas para entrega imediata</p>
           </CardContent>
         </Card>
 
         <Card className="bg-card/50 border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Reposição Necessária</CardTitle>
+            <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Produtos Críticos</CardTitle>
             <AlertTriangle className="w-5 h-5 text-yellow-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-yellow-500">{lowStockCount} produtos</div>
-            <p className="text-[10px] text-muted-foreground uppercase mt-1">Itens com menos de 10 unidades</p>
+            <div className="text-3xl font-bold text-yellow-500">{lowStockCount} plataformas</div>
+            <p className="text-[10px] text-muted-foreground uppercase mt-1">Menos de 5 unidades restantes</p>
           </CardContent>
         </Card>
       </div>
 
-      <div className="space-y-4">
-        {products.map((product) => (
-          <Card key={product.id} className="bg-card/50 border-border overflow-hidden">
-            <CardContent className="p-6">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div className="flex items-center gap-4 flex-1">
-                  <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-primary/10 shrink-0">
-                    {product.imageUrl ? (
-                      <Image src={product.imageUrl} alt={product.name} fill className="object-cover" />
-                    ) : (
-                      <Tv className="w-6 h-6 text-primary absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" />
-                    )}
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-lg">{product.name}</h3>
-                    <div className="flex items-center gap-2 mt-1">
-                      <div className={cn(
-                        "h-2 w-2 rounded-full",
-                        product.stock < 10 ? "bg-red-500" : "bg-green-500"
-                      )}></div>
-                      <span className={cn(
-                        "text-xs font-bold uppercase tracking-widest",
-                        product.stock < 10 ? "text-red-500" : "text-muted-foreground"
-                      )}>
-                        {product.stock} unidades disponíveis
-                      </span>
+      <div className="space-y-6">
+        {products.map((product) => {
+          const unsoldCredentials = product.credentials?.filter(c => !c.sold) || [];
+          return (
+            <Card key={product.id} className="bg-card/50 border-border overflow-hidden">
+              <CardHeader className="p-6 pb-0">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-primary/10 shrink-0">
+                      {product.imageUrl ? (
+                        <Image src={product.imageUrl} alt={product.name} fill className="object-cover" />
+                      ) : (
+                        <Tv className="w-5 h-5 text-primary absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" />
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-lg">{product.name}</h3>
+                      <Badge variant={unsoldCredentials.length < 5 ? "destructive" : "outline"} className="text-[10px] uppercase">
+                        {unsoldCredentials.length} disponíveis
+                      </Badge>
                     </div>
                   </div>
-                </div>
 
-                <div className="flex items-end gap-3">
-                  <div className="space-y-1">
-                    <Label htmlFor={`stock-${product.id}`} className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Atribuir Novo Estoque</Label>
-                    <Input 
-                      id={`stock-${product.id}`}
-                      type="number"
-                      placeholder={product.stock.toString()}
-                      className="bg-background border-border h-12 w-32 rounded-xl text-center font-bold"
-                      value={editingStock[product.id] ?? ""}
-                      onChange={(e) => setEditingStock({ ...editingStock, [product.id]: e.target.value })}
-                    />
+                  <Dialog open={selectedProductId === product.id} onOpenChange={(open) => !open && setSelectedProductId(null)}>
+                    <DialogTrigger asChild>
+                      <Button 
+                        onClick={() => setSelectedProductId(product.id)}
+                        className="bg-primary hover:bg-primary/90 gap-2 font-bold rounded-xl"
+                      >
+                        <Plus className="w-4 h-4" />
+                        ADICIONAR CONTA
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="bg-card border-border rounded-[2rem]">
+                      <DialogHeader>
+                        <DialogTitle className="font-headline text-2xl uppercase">Abastecer {product.name}</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                          <Label className="text-[10px] font-bold uppercase text-muted-foreground">E-mail da Conta</Label>
+                          <div className="relative">
+                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                            <Input 
+                              placeholder="exemplo@streaming.com"
+                              className="bg-background border-border h-12 pl-12 rounded-xl"
+                              value={formData.email}
+                              onChange={(e) => setFormData({...formData, email: e.target.value})}
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-[10px] font-bold uppercase text-muted-foreground">Tela Privada</Label>
+                          <div className="relative">
+                            <Monitor className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                            <Input 
+                              placeholder="Ex: TELA 01"
+                              className="bg-background border-border h-12 pl-12 rounded-xl"
+                              value={formData.screenName}
+                              onChange={(e) => setFormData({...formData, screenName: e.target.value})}
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-[10px] font-bold uppercase text-muted-foreground">Senha da Tela (Opcional)</Label>
+                          <div className="relative">
+                            <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                            <Input 
+                              type="password"
+                              placeholder="Deixe em branco se não houver"
+                              className="bg-background border-border h-12 pl-12 rounded-xl"
+                              value={formData.screenPassword}
+                              onChange={(e) => setFormData({...formData, screenPassword: e.target.value})}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button variant="outline" className="rounded-xl flex-1 h-12" onClick={() => setSelectedProductId(null)}>CANCELAR</Button>
+                        <Button className="bg-primary hover:bg-primary/90 font-bold rounded-xl flex-1 h-12" onClick={handleAddAccount}>SALVAR CONTA</Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </CardHeader>
+
+              <CardContent className="p-6">
+                {unsoldCredentials.length > 0 ? (
+                  <div className="rounded-xl border border-border overflow-hidden">
+                    <Table>
+                      <TableHeader className="bg-muted/50">
+                        <TableRow className="border-border">
+                          <TableHead className="text-[10px] font-bold uppercase">E-mail</TableHead>
+                          <TableHead className="text-[10px] font-bold uppercase">Tela</TableHead>
+                          <TableHead className="text-[10px] font-bold uppercase text-center">Senha</TableHead>
+                          <TableHead className="text-[10px] font-bold uppercase text-right">Ação</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {unsoldCredentials.map((cred) => (
+                          <TableRow key={cred.id} className="border-border hover:bg-muted/20">
+                            <TableCell className="text-xs font-medium">{cred.email}</TableCell>
+                            <TableCell className="text-xs">{cred.screenName}</TableCell>
+                            <TableCell className="text-xs text-center font-mono">
+                              {cred.screenPassword ? "••••••" : <span className="text-muted-foreground italic">N/A</span>}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-8 w-8 text-muted-foreground hover:text-red-500"
+                                onClick={() => {
+                                  removeCredential(product.id, cred.id);
+                                  toast({ title: "Removido", description: "Conta excluída do estoque." });
+                                }}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
                   </div>
-                  <Button 
-                    className="h-12 w-12 rounded-xl bg-primary hover:bg-primary/90"
-                    onClick={() => handleUpdateStock(product.id)}
-                  >
-                    <Save className="w-5 h-5" />
-                  </Button>
-                </div>
-              </div>
-
-              <div className="mt-6 w-full bg-muted rounded-full h-2 overflow-hidden">
-                <div 
-                  className={cn(
-                    "h-full transition-all duration-500",
-                    product.stock < 10 ? "bg-red-500" : "bg-primary"
-                  )} 
-                  style={{ width: `${Math.min(100, (product.stock / 50) * 100)}%` }}
-                ></div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                ) : (
+                  <div className="py-8 text-center bg-muted/20 rounded-2xl border border-dashed border-border">
+                    <p className="text-sm text-muted-foreground font-medium">Nenhuma conta disponível para este serviço.</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
     </div>
   );
