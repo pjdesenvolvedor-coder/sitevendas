@@ -26,11 +26,14 @@ export default function Home() {
     }
   };
 
+  // Filtra apenas produtos de VAREJO (que não são de revenda)
+  const retailProductsList = products.filter(p => !p.isRevenda);
+
   // Produtos que são promoção aparecem apenas na seção de Promoções
-  const promotionProducts = products.filter(p => p.active && p.isPromotion);
+  const promotionProducts = retailProductsList.filter(p => p.active && p.isPromotion);
   
   // Produtos regulares são os ativos que NÃO são promoção
-  const regularProducts = products.filter(p => p.active && !p.isPromotion);
+  const regularProducts = retailProductsList.filter(p => p.active && !p.isPromotion);
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground overflow-x-hidden">
