@@ -147,11 +147,8 @@ export default function AdminProductsPage() {
       imageUrl: formData.imageUrl,
       active: true,
       isPromotion: formData.isPromotion,
+      originalPrice: (formData.isPromotion && formData.originalPrice) ? parseFloat(formData.originalPrice) : null,
     };
-
-    if (formData.isPromotion && formData.originalPrice) {
-      newProduct.originalPrice = parseFloat(formData.originalPrice);
-    }
 
     addProduct(newProduct);
     toast({ title: "Produto Salvo", description: `${formData.name} foi adicionado.` });
@@ -173,15 +170,9 @@ export default function AdminProductsPage() {
       imageUrl: editFormData.imageUrl,
       features: editFormData.features,
       active: editFormData.active,
-      isPromotion: editFormData.isPromotion
+      isPromotion: editFormData.isPromotion,
+      originalPrice: (editFormData.isPromotion && editFormData.originalPrice) ? parseFloat(editFormData.originalPrice) : null,
     };
-
-    if (editFormData.isPromotion && editFormData.originalPrice) {
-      updatedProduct.originalPrice = parseFloat(editFormData.originalPrice);
-    } else {
-      // Use null instead of undefined for Firestore compatibility
-      updatedProduct.originalPrice = undefined;
-    }
 
     updateProduct(updatedProduct);
 
