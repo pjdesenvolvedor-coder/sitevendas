@@ -205,12 +205,12 @@ export default function RevendaPage() {
                     
                     {hasStock ? (
                       <Link href={`/checkout/${product.id}`}>
-                        <Button className="bg-primary hover:bg-primary/90 h-14 px-8 text-sm rounded-xl font-bold uppercase tracking-widest">
+                        <Button className="bg-primary hover:bg-primary/90 h-11 px-6 text-xs rounded-xl font-bold uppercase tracking-widest">
                           Adquirir
                         </Button>
                       </Link>
                     ) : (
-                      <Button disabled className="bg-muted/50 text-red-500 h-14 px-8 text-sm rounded-xl font-bold uppercase tracking-widest">
+                      <Button disabled className="bg-muted/50 text-red-500 h-11 px-6 text-xs rounded-xl font-bold uppercase tracking-widest">
                         Aguardando Reposição
                       </Button>
                     )}
