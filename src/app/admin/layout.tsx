@@ -18,7 +18,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 const NAV_ITEMS = [
@@ -124,6 +124,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="p-0 border-none w-80 bg-background">
+            <SheetHeader className="sr-only">
+              <SheetTitle>Menu Administrativo</SheetTitle>
+              <SheetDescription>Navegação principal do painel administrativo</SheetDescription>
+            </SheetHeader>
             <SidebarContent />
           </SheetContent>
         </Sheet>
