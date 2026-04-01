@@ -69,9 +69,11 @@ export default function Home() {
             >
               Ver Catálogo
             </Button>
-            <Button size="lg" variant="outline" className="w-full sm:w-auto h-16 text-xl rounded-2xl font-bold border-white/10 bg-white/5 hover:bg-white/10 uppercase tracking-widest">
-              Suporte 24h
-            </Button>
+            <Link href="https://wa.link/epce4q" target="_blank" className="w-full sm:w-auto">
+              <Button size="lg" variant="outline" className="w-full h-16 text-xl rounded-2xl font-bold border-white/10 bg-white/5 hover:bg-white/10 uppercase tracking-widest">
+                se precisar de suporte clique aqui
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
