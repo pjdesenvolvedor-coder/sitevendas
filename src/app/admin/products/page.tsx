@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -137,6 +136,8 @@ export default function AdminProductsPage() {
       return;
     }
     
+    const originalPriceVal = parseFloat(formData.originalPrice);
+    
     const newProduct: StreamingService = {
       id: Math.random().toString(36).substr(2, 9),
       name: formData.name,
@@ -147,7 +148,8 @@ export default function AdminProductsPage() {
       imageUrl: formData.imageUrl,
       active: true,
       isPromotion: formData.isPromotion,
-      originalPrice: (formData.isPromotion && formData.originalPrice) ? parseFloat(formData.originalPrice) : null,
+      isRevenda: false,
+      originalPrice: (formData.isPromotion && !isNaN(originalPriceVal)) ? originalPriceVal : null,
     };
 
     addProduct(newProduct);
@@ -163,6 +165,8 @@ export default function AdminProductsPage() {
       return;
     }
 
+    const originalPriceVal = parseFloat(editFormData.originalPrice);
+
     const updatedProduct: StreamingService = {
       ...editingProduct,
       name: editFormData.name,
@@ -171,7 +175,7 @@ export default function AdminProductsPage() {
       features: editFormData.features,
       active: editFormData.active,
       isPromotion: editFormData.isPromotion,
-      originalPrice: (editFormData.isPromotion && editFormData.originalPrice) ? parseFloat(editFormData.originalPrice) : null,
+      originalPrice: (editFormData.isPromotion && !isNaN(originalPriceVal)) ? originalPriceVal : null,
     };
 
     updateProduct(updatedProduct);

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { use, useState, useEffect } from "react";
@@ -71,8 +70,8 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
               email: sold?.email || "Pendente de envio",
               pass: sold?.password || "Pendente de envio",
               screen: sold?.screenName || "Pendente de envio",
-              screenPass: sold?.screenPassword,
-              isRevenda: p.isRevenda
+              screenPass: sold?.screenPassword || null,
+              isRevenda: p.isRevenda || false
             };
           });
           
