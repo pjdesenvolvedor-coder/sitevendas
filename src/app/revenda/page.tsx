@@ -82,9 +82,9 @@ export default function RevendaPage() {
             <Link href="https://wa.link/epce4q" target="_blank" className="w-full sm:w-auto">
               <Button 
                 size="lg" 
-                className="w-full h-16 text-xl rounded-2xl font-bold bg-[#25D366] hover:bg-[#1EBE57] text-white uppercase tracking-widest gap-3 shadow-lg shadow-green-500/20 border-none"
+                className="w-full h-14 text-lg rounded-2xl font-bold bg-[#25D366] hover:bg-[#1EBE57] text-white uppercase tracking-widest border-none shadow-md shadow-green-500/10"
               >
-                Falar com Consultor
+                FALAR COM CONSULTOR
               </Button>
             </Link>
           </div>
@@ -183,7 +183,7 @@ export default function RevendaPage() {
                 <CardContent className="p-8">
                   <div className="flex flex-col gap-4 mb-6">
                     <div className="flex justify-end">
-                      <Badge variant="secondary" className="bg-black/60 text-primary border border-primary/20 backdrop-blur-md px-3 py-1.5 text-[10px] font-bold gap-2">
+                      <Badge className="bg-black/60 text-primary border border-primary/20 backdrop-blur-md px-3 py-1.5 text-[10px] font-bold gap-2">
                         <Boxes className="w-3 h-3 text-primary" />
                         {product.stock} EM ESTOQUE
                       </Badge>
@@ -251,7 +251,7 @@ export default function RevendaPage() {
             </span>
           </div>
           <p className="text-[10px] text-muted-foreground uppercase tracking-[0.1em] max-w-xs leading-loose">
-            ÁREA EXCLUSIVA PARA PARCEIROS E REVENDEDORES. TODOS OS DIREITOS RESERVADOS.
+            © 2024 PJ CONTAS. ÁREA EXCLUSIVA PARA PARCEIROS E REVENDEDORES. TODOS OS DIREITOS RESERVADOS.
           </p>
         </div>
       </footer>
