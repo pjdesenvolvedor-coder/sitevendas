@@ -173,6 +173,9 @@ export default function RevendaPage() {
           <p className="text-base text-muted-foreground max-w-md">
             Selecione o pacote ideal para sua revenda e receba os acessos imediatamente.
           </p>
+          <p className="text-xs text-primary font-bold uppercase mt-4 tracking-wider">
+            Todas nossas contas são feitas no nosso email para agilizar devidos suportes!
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
