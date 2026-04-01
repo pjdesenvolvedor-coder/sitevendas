@@ -171,11 +171,17 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const availableToAdd = products.filter(p => 
-    p.active && 
-    p.stock > 0 && 
-    !selectedProducts.find(sp => sp.id === p.id)
-  );
+  const availableToAdd = products.filter(p => {
+    // Só mostra produtos do mesmo tipo (Varejo ou Revenda) que o primeiro item selecionado
+    const isSameType = selectedProducts.length > 0 
+      ? !!p.isRevenda === !!selectedProducts[0].isRevenda 
+      : true;
+
+    return p.active && 
+      p.stock > 0 && 
+      !selectedProducts.find(sp => sp.id === p.id) &&
+      isSameType;
+  });
 
   // Verifica se o pedido atual é de revenda para redirecionar o botão de volta corretamente
   const isRevendaOrder = purchasedCredentials.some(cred => cred.isRevenda);
@@ -185,7 +191,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
       <Navbar />
       <div className="container mx-auto px-6 max-w-2xl">
         {paymentStatus !== 'paid' && (
-          <Link href="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary mb-8 text-sm font-bold uppercase tracking-widest transition-colors">
+          <Link href={selectedProducts[0]?.isRevenda ? "/revenda" : "/"} className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary mb-8 text-sm font-bold uppercase tracking-widest transition-colors">
             <ArrowLeft className="w-4 h-4" />
             Voltar para a Loja
           </Link>
@@ -233,7 +239,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
                     <ChevronDown className="w-4 h-4 ml-1 opacity-50" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-card border-white/10 w-64 p-2 rounded-xl">
+                <DropdownMenuContent className="bg-card border-white/10 w-64 p-2 rounded-xl max-h-[300px] overflow-y-auto no-scrollbar">
                   {availableToAdd.length > 0 ? (
                     availableToAdd.map(product => (
                       <DropdownMenuItem 
