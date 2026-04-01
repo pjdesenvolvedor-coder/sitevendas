@@ -9,7 +9,7 @@ import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Star, Zap, ShoppingCart, Tv, Play, Ban, Sparkles, ArrowRight, Briefcase } from "lucide-react";
+import { CheckCircle2, Star, Zap, ShoppingCart, Tv, Play, Ban, Sparkles, ArrowRight, Briefcase, Boxes } from "lucide-react";
 
 export default function RevendaPage() {
   const { products } = useProducts();
@@ -129,6 +129,12 @@ export default function RevendaPage() {
                         <Image src={product.imageUrl} alt={product.name} fill className="object-cover transition-transform group-hover:scale-105" />
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent opacity-60"></div>
+                      <div className="absolute top-4 right-4 z-10">
+                        <Badge className="bg-black/60 text-white border-white/10 backdrop-blur-md px-3 py-1 text-[10px] font-bold gap-2">
+                          <Boxes className="w-3 h-3 text-primary" />
+                          {product.stock} DISPONÍVEIS
+                        </Badge>
+                      </div>
                     </div>
                     <div className="p-6">
                       <div className="flex items-center gap-2 mb-2">
@@ -175,17 +181,23 @@ export default function RevendaPage() {
             return (
               <Card key={product.id} className="group bg-card/60 border-white/5 hover:border-primary/50 transition-all duration-500 rounded-[2.5rem] overflow-hidden shadow-2xl backdrop-blur-xl">
                 <CardContent className="p-8">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="relative w-16 h-16 rounded-2xl overflow-hidden bg-primary/10 shrink-0">
-                      {product.imageUrl && <Image src={product.imageUrl} alt={product.name} fill className="object-cover" />}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <CardTitle className="text-2xl font-headline uppercase tracking-normal">{product.name}</CardTitle>
-                        <VerifiedBadge />
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-4">
+                      <div className="relative w-16 h-16 rounded-2xl overflow-hidden bg-primary/10 shrink-0">
+                        {product.imageUrl && <Image src={product.imageUrl} alt={product.name} fill className="object-cover" />}
                       </div>
-                      <Badge variant="outline" className="text-[8px] uppercase tracking-widest text-primary border-primary/30">Revenda</Badge>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <CardTitle className="text-2xl font-headline uppercase tracking-normal">{product.name}</CardTitle>
+                          <VerifiedBadge />
+                        </div>
+                        <Badge variant="outline" className="text-[8px] uppercase tracking-widest text-primary border-primary/30">Revenda</Badge>
+                      </div>
                     </div>
+                    <Badge variant="secondary" className="bg-primary/10 text-primary border-none font-bold py-1 px-3 text-[10px] uppercase gap-2">
+                      <Boxes className="w-3 h-3" />
+                      {product.stock} EM ESTOQUE
+                    </Badge>
                   </div>
                   
                   <ul className="space-y-3 mb-8">
