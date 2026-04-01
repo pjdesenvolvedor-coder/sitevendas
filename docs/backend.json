@@ -1,0 +1,315 @@
+{
+  "entities": {
+    "Product": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Product",
+      "type": "object",
+      "description": "Represents a type of streaming service product available for sale (e.g., 'Netflix Premium Account').",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Product entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The common name of the streaming service product, e.g., 'Netflix Premium', 'Disney+ Standard'."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the product, including features and benefits."
+        },
+        "features": {
+          "type": "array",
+          "description": "A list of key features included with this product, e.g., ['4K HDR', '4 Screens'].",
+          "items": {
+            "type": "string"
+          }
+        },
+        "basePrice": {
+          "type": "number",
+          "description": "The base price for one unit of this product type."
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Indicates whether the product is currently visible and available for purchase on the storefront."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the product record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the product record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "features",
+        "basePrice",
+        "isActive",
+        "createdAt"
+      ]
+    },
+    "StockItem": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "StockItem",
+      "type": "object",
+      "description": "Represents an individual streaming service account credential available in stock.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the StockItem entity."
+        },
+        "productId": {
+          "type": "string",
+          "description": "Reference to the Product this stock item belongs to. (Relationship: Product 1:N StockItem)"
+        },
+        "credentials": {
+          "type": "string",
+          "description": "The actual account credentials (e.g., username:password or access key). This data must be handled securely by the application layer."
+        },
+        "status": {
+          "type": "string",
+          "description": "The current status of the stock item (e.g., 'available', 'sold', 'delivered', 'revoked')."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the stock item was added to inventory.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the stock item record was last updated.",
+          "format": "date-time"
+        },
+        "deliveredAt": {
+          "type": "string",
+          "description": "Timestamp when this specific stock item was delivered to a customer.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "productId",
+        "credentials",
+        "status",
+        "createdAt"
+      ]
+    },
+    "Order": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Order",
+      "type": "object",
+      "description": "Represents a customer's purchase transaction, initiated via guest checkout.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Order entity."
+        },
+        "customerEmail": {
+          "type": "string",
+          "description": "The email address of the customer who placed the order.",
+          "format": "email"
+        },
+        "customerName": {
+          "type": "string",
+          "description": "The name of the customer who placed the order (optional for guest checkout)."
+        },
+        "orderDate": {
+          "type": "string",
+          "description": "The date and time when the order was placed.",
+          "format": "date-time"
+        },
+        "totalAmount": {
+          "type": "number",
+          "description": "The total monetary amount of the order, including all items and taxes."
+        },
+        "currency": {
+          "type": "string",
+          "description": "The currency code for the totalAmount (e.g., 'BRL', 'USD')."
+        },
+        "status": {
+          "type": "string",
+          "description": "The current processing status of the order (e.g., 'pending', 'processing', 'completed', 'cancelled', 'refunded')."
+        },
+        "paymentIntentId": {
+          "type": "string",
+          "description": "Reference ID from the external payment gateway for this transaction."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the order record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the order record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "customerEmail",
+        "orderDate",
+        "totalAmount",
+        "currency",
+        "status",
+        "paymentIntentId",
+        "createdAt"
+      ]
+    },
+    "OrderItem": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "OrderItem",
+      "type": "object",
+      "description": "Represents a specific product ordered within a customer's order, linking to a particular fulfilled stock item.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the OrderItem entity."
+        },
+        "orderId": {
+          "type": "string",
+          "description": "Reference to the Order this item belongs to. (Relationship: Order 1:N OrderItem)"
+        },
+        "productId": {
+          "type": "string",
+          "description": "Reference to the Product type that was ordered. (Relationship: Product 1:N OrderItem)"
+        },
+        "stockItemId": {
+          "type": "string",
+          "description": "Reference to the specific StockItem (account credential) that was delivered to fulfill this order item. This is populated once the item is assigned/delivered. (Relationship: StockItem 1:1 OrderItem)"
+        },
+        "priceAtPurchase": {
+          "type": "number",
+          "description": "The price of this specific item at the moment it was added to the order."
+        },
+        "status": {
+          "type": "string",
+          "description": "The fulfillment status of this individual order item (e.g., 'pending delivery', 'delivered', 'refunded')."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the order item record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the order item record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "orderId",
+        "productId",
+        "priceAtPurchase",
+        "status",
+        "createdAt"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/products/{productId}",
+        "definition": {
+          "entityName": "Product",
+          "schema": {
+            "$ref": "#/backend/entities/Product"
+          },
+          "description": "Catalog of streaming service products available for sale. Publicly readable for display on the storefront. Admin writable for product management.",
+          "params": [
+            {
+              "name": "productId",
+              "description": "Unique identifier for the Product document."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/products/{productId}/stockItems/{stockItemId}",
+        "definition": {
+          "entityName": "StockItem",
+          "schema": {
+            "$ref": "#/backend/entities/StockItem"
+          },
+          "description": "Specific streaming account credentials available in inventory for a given product. This collection is for admin-only access due to sensitive credential information. Includes denormalized 'productId' for direct context.",
+          "params": [
+            {
+              "name": "productId",
+              "description": "The unique identifier of the parent Product."
+            },
+            {
+              "name": "stockItemId",
+              "description": "Unique identifier for the StockItem document."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/orders/{orderId}",
+        "definition": {
+          "entityName": "Order",
+          "schema": {
+            "$ref": "#/backend/entities/Order"
+          },
+          "description": "Customer purchase transactions initiated via guest checkout. Includes denormalized 'customerAuthId' (Firebase anonymous UID) for secure customer-specific access and 'customerEmail' for identification. Admin users can access all orders.",
+          "params": [
+            {
+              "name": "orderId",
+              "description": "Unique identifier for the Order document."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/orders/{orderId}/orderItems/{orderItemId}",
+        "definition": {
+          "entityName": "OrderItem",
+          "schema": {
+            "$ref": "#/backend/entities/OrderItem"
+          },
+          "description": "Individual product items within a customer's order. Includes denormalized 'customerAuthId' (from the parent Order) for customer-specific access. Admin users can access all order items.",
+          "params": [
+            {
+              "name": "orderId",
+              "description": "The unique identifier of the parent Order."
+            },
+            {
+              "name": "orderItemId",
+              "description": "Unique identifier for the OrderItem document."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/roles_admin/{adminUid}",
+        "definition": {
+          "entityName": "AdminRole",
+          "schema": {
+            "$ref": "#/backend/entities/AdminRole"
+          },
+          "description": "Stores administrator roles. The existence of a document at `/roles_admin/{uid}` grants admin privileges to that UID. Used for Database Access Control (DBAC).",
+          "params": [
+            {
+              "name": "adminUid",
+              "description": "The Firebase Authentication UID of an administrator."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The recommended Firestore structure is designed to support a streaming service sales platform with public product listings, guest checkout, and administrative management. It prioritizes secure, scalable, and debuggable security rules, adhering strictly to the core design principles and mandates.\n\n**Authorization Independence (CRITICAL) & Denormalization:**\n\n1.  **Product (`/products/{productId}`):** This collection is publicly readable, meaning no specific authorization context (like an `ownerId`) is needed for read operations by general users. Administrative writes are controlled via a dedicated `/roles_admin` collection, ensuring admin access is independent of product document content. Since there's no `get()` dependency on a parent for authorization, this path naturally adheres to the principle.\n2.  **StockItem (`/products/{productId}/stockItems/{stockItemId}`):** Access to stock items (credentials) is strictly limited to administrators. No customer-specific authorization is required. The `productId` is embedded in the path, providing immediate context without requiring parent `get()` calls for rules. The collection's uniform security posture (admin-only) prevents hierarchical authorization issues.\n3.  **Order (`/orders/{orderId}`):** For guest checkout, the `customerAuthId` (Firebase Anonymous Authentication UID) is **denormalized** directly into each `Order` document. This allows security rules to directly compare `request.auth.uid` with `resource.data.customerAuthId` for customer-specific order access, completely eliminating `get()` calls to a non-existent parent user document or a separate authorization collection for individual orders. Administrative access is handled by checking for existence in the `/roles_admin` collection, also avoiding `get()` dependencies.\n4.  **OrderItem (`/orders/{orderId}/orderItems/{orderItemId}`):** Similar to `Order`, the `customerAuthId` from the parent order is **denormalized** into each `OrderItem` document. This ensures that rules can independently verify `request.auth.uid` against `resource.data.customerAuthId` for each item, maintaining authorization independence and allowing atomic operations across order and order item documents without rule failures due to `get()` calls to the parent `Order`.\n\n**QAPs (Rules are not Filters) & Structural Segregation:**\n\n1.  **Public Product Listing (`/products`):** The entire `/products` collection is designed for public `list` operations, directly fulfilling the QAP. Users can retrieve the full catalog without security rules acting as filters on individual documents.\n2.  **Admin Stock Management (`/products/{productId}/stockItems`):** This subcollection is dedicated to sensitive stock items, accessible only by administrators. Admins can `list` all stock items for a given product without rules filtering out specific documents, as all documents in this collection share the same security posture.\n3.  **Order Tracking (`/orders` and `/orders/{orderId}/orderItems`):** Administrators can `list` all documents in these collections, fulfilling the QAP for admin users. For guest customers, `list` operations on `/orders` (or subcollections) are designed such that if an anonymous user requests their orders, a rule can enforce `request.auth.uid == resource.data.customerAuthId`. While this technically acts as a filter on `list` operations, it's a standard and optimized pattern for an authenticated user to access *their own* data, leveraging Firestore's indexing capabilities. Crucially, individual `get()` operations for a specific order by a customer will directly use the denormalized `customerAuthId` in the document, avoiding problematic `get()` filters.\n\n**DBAC and Predictability:**\n\n*   **Global Roles (`/roles_admin/{adminUid}`):** Administrator roles are managed via a dedicated top-level collection where the document ID is the `uid` of the administrator. The existence of a document signifies an admin role, allowing simple and debuggable `exists()` checks in security rules for administrative actions across any collection. This adheres to the DBAC principle by storing roles in the database, relying solely on `request.auth.uid` for role verification.\n*   Consistent naming conventions like `productId`, `orderId`, `customerAuthId`, `status`, `createdAt`, and `updatedAt` are used throughout, ensuring clarity and predictability for developers and for writing concise, understandable security rules."
+  }
+}
