@@ -187,7 +187,7 @@ export default function RevendaPage() {
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex flex-col">
                       <span className="text-4xl font-headline font-bold text-white">R$ {product.price.toFixed(2)}</span>
-                      <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Preco da conta</span>
+                      <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Preço da conta</span>
                     </div>
                     
                     {hasStock ? (
