@@ -155,37 +155,44 @@ export default function AdminOrdersPage() {
                   <div className="bg-primary/10 px-4 py-2 border-b border-border">
                     <span className="text-[10px] font-bold text-white uppercase tracking-wider">{item.productName}</span>
                   </div>
-                  <div className="p-4 grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <Label className="text-[8px] uppercase text-muted-foreground font-bold">E-mail</Label>
-                      <div className="flex items-center justify-between bg-muted/20 p-2 rounded-lg text-[10px] font-mono group">
-                        <span className="truncate">{item.email}</span>
-                        <Button variant="ghost" size="icon" className="h-4 w-4 shrink-0" onClick={() => copyToClipboard(item.email)}>
-                          <Copy className="w-3 h-3" />
-                        </Button>
+                  <div className="p-4 flex flex-col gap-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <Label className="text-[8px] uppercase text-muted-foreground font-bold">E-mail</Label>
+                        <div className="flex items-center justify-between bg-muted/20 p-2 rounded-lg text-[10px] font-mono group">
+                          <span className="truncate">{item.email}</span>
+                          <Button variant="ghost" size="icon" className="h-4 w-4 shrink-0" onClick={() => copyToClipboard(item.email)}>
+                            <Copy className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[8px] uppercase text-muted-foreground font-bold">Senha</Label>
+                        <div className="flex items-center justify-between bg-muted/20 p-2 rounded-lg text-[10px] font-mono">
+                          <span className="truncate">{item.pass}</span>
+                          <Button variant="ghost" size="icon" className="h-4 w-4 shrink-0" onClick={() => copyToClipboard(item.pass)}>
+                            <Copy className="w-3 h-3" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
-                    <div className="space-y-1">
-                      <Label className="text-[8px] uppercase text-muted-foreground font-bold">Senha</Label>
-                      <div className="flex items-center justify-between bg-muted/20 p-2 rounded-lg text-[10px] font-mono">
-                        <span className="truncate">{item.pass}</span>
-                        <Button variant="ghost" size="icon" className="h-4 w-4 shrink-0" onClick={() => copyToClipboard(item.pass)}>
-                          <Copy className="w-3 h-3" />
-                        </Button>
+                    
+                    {!item.isRevenda && (
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <Label className="text-[8px] uppercase text-muted-foreground font-bold">Tela / Perfil</Label>
+                          <div className="bg-muted/20 p-2 rounded-lg text-[10px] font-mono">
+                            {item.screen}
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-[8px] uppercase text-muted-foreground font-bold">Senha Tela</Label>
+                          <div className="bg-muted/20 p-2 rounded-lg text-[10px] font-mono">
+                            {item.screenPass || "Sem Senha"}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-[8px] uppercase text-muted-foreground font-bold">Tela / Perfil</Label>
-                      <div className="bg-muted/20 p-2 rounded-lg text-[10px] font-mono">
-                        {item.screen}
-                      </div>
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-[8px] uppercase text-muted-foreground font-bold">Senha Tela</Label>
-                      <div className="bg-muted/20 p-2 rounded-lg text-[10px] font-mono">
-                        {item.screenPass || "Sem Senha"}
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               ))}

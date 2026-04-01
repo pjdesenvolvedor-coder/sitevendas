@@ -1,3 +1,4 @@
+
 "use client";
 
 import { use, useState, useEffect } from "react";
@@ -70,7 +71,8 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
               email: sold?.email || "Pendente de envio",
               pass: sold?.password || "Pendente de envio",
               screen: sold?.screenName || "Pendente de envio",
-              screenPass: sold?.screenPassword
+              screenPass: sold?.screenPassword,
+              isRevenda: p.isRevenda
             };
           });
           
@@ -449,28 +451,31 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
                             </div>
                           </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-1">
-                            <Label className="text-[8px] uppercase text-muted-foreground font-bold">Perfil / Tela</Label>
-                            <div 
-                              className="flex items-center gap-2 bg-black/20 p-2 rounded-lg text-xs font-mono break-all text-white cursor-pointer hover:bg-black/40 transition-colors"
-                              onClick={() => copyToClipboard(cred.screen)}
-                            >
-                              <Monitor className="w-3 h-3 shrink-0 text-primary" />
-                              <span className="truncate">{cred.screen}</span>
+                        
+                        {!cred.isRevenda && (
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                              <Label className="text-[8px] uppercase text-muted-foreground font-bold">Perfil / Tela</Label>
+                              <div 
+                                className="flex items-center gap-2 bg-black/20 p-2 rounded-lg text-xs font-mono break-all text-white cursor-pointer hover:bg-black/40 transition-colors"
+                                onClick={() => copyToClipboard(cred.screen)}
+                              >
+                                <Monitor className="w-3 h-3 shrink-0 text-primary" />
+                                <span className="truncate">{cred.screen}</span>
+                              </div>
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-[8px] uppercase text-muted-foreground font-bold">Senha Perfil</Label>
+                              <div 
+                                className="flex items-center gap-2 bg-black/20 p-2 rounded-lg text-xs font-mono break-all text-white cursor-pointer hover:bg-black/40 transition-colors"
+                                onClick={() => copyToClipboard(cred.screenPass || "Sem Senha")}
+                              >
+                                <Key className="w-3 h-3 shrink-0 text-primary" />
+                                <span className="truncate">{cred.screenPass || "Sem Senha"}</span>
+                              </div>
                             </div>
                           </div>
-                          <div className="space-y-1">
-                            <Label className="text-[8px] uppercase text-muted-foreground font-bold">Senha Perfil</Label>
-                            <div 
-                              className="flex items-center gap-2 bg-black/20 p-2 rounded-lg text-xs font-mono break-all text-white cursor-pointer hover:bg-black/40 transition-colors"
-                              onClick={() => copyToClipboard(cred.screenPass || "Sem Senha")}
-                            >
-                              <Key className="w-3 h-3 shrink-0 text-primary" />
-                              <span className="truncate">{cred.screenPass || "Sem Senha"}</span>
-                            </div>
-                          </div>
-                        </div>
+                        )}
                       </CardContent>
                     </Card>
                   ))}

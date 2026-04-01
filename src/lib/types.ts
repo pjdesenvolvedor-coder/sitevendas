@@ -33,6 +33,7 @@ export type DeliveredCredential = {
   pass: string;
   screen: string;
   screenPass?: string;
+  isRevenda?: boolean;
 };
 
 export type Order = {
