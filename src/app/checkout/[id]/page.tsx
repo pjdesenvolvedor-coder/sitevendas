@@ -172,7 +172,6 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
   };
 
   const availableToAdd = products.filter(p => {
-    // Só mostra produtos do mesmo tipo (Varejo ou Revenda) que o primeiro item selecionado
     const isSameType = selectedProducts.length > 0 
       ? !!p.isRevenda === !!selectedProducts[0].isRevenda 
       : true;
@@ -183,7 +182,6 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
       isSameType;
   });
 
-  // Verifica se o pedido atual é de revenda para redirecionar o botão de volta corretamente
   const isRevendaOrder = purchasedCredentials.some(cred => cred.isRevenda);
 
   return (
@@ -244,11 +242,11 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
                     availableToAdd.map(product => (
                       <DropdownMenuItem 
                         key={product.id} 
-                        className="flex justify-between items-center p-3 rounded-lg cursor-pointer hover:bg-primary/10 group"
+                        className="flex justify-between items-center p-3 rounded-lg cursor-pointer focus:bg-white/5 group border border-transparent focus:border-white/10 outline-none transition-all"
                         onClick={() => handleAddProduct(product)}
                       >
                         <div className="flex flex-col">
-                          <span className="font-bold text-sm text-white group-hover:text-primary">{product.name}</span>
+                          <span className="font-bold text-sm text-white">{product.name}</span>
                           <span className="text-[8px] text-muted-foreground uppercase font-bold">Assinatura Mensal</span>
                         </div>
                         <span className="text-xs font-bold text-primary">R$ {product.price.toFixed(2)}</span>
