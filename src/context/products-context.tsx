@@ -1,15 +1,25 @@
-
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useMemo } from 'react';
 import { StreamingService, AccountCredential, Order, WebhookConfig } from '@/lib/types';
-import { INITIAL_PRODUCTS } from '@/lib/mock-data';
 import { sendWebhookAction } from '@/lib/webhook-actions';
+import { 
+  useFirestore, 
+  useCollection, 
+  useDoc, 
+  useMemoFirebase,
+  setDocumentNonBlocking,
+  addDocumentNonBlocking,
+  updateDocumentNonBlocking,
+  deleteDocumentNonBlocking
+} from '@/firebase';
+import { collection, doc } from 'firebase/firestore';
 
 type ProductsContextType = {
   products: StreamingService[];
   orders: Order[];
   webhookSettings: WebhookConfig;
+  isLoading: boolean;
   addProduct: (product: StreamingService) => void;
   deleteProduct: (id: string) => void;
   updateProduct: (product: StreamingService) => void;
@@ -36,141 +46,105 @@ const DEFAULT_WEBHOOK: WebhookConfig = {
 const ProductsContext = createContext<ProductsContextType | undefined>(undefined);
 
 export function ProductsProvider({ children }: { children: React.ReactNode }) {
-  const [products, setProducts] = useState<StreamingService[]>([]);
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [webhookSettings, setWebhookSettings] = useState<WebhookConfig>(DEFAULT_WEBHOOK);
-  const [isInitialized, setIsInitialized] = useState(false);
+  const db = useFirestore();
 
-  useEffect(() => {
-    const savedProducts = localStorage.getItem('pj_contas_products');
-    const savedOrders = localStorage.getItem('pj_contas_orders');
-    const savedWebhook = localStorage.getItem('pj_contas_webhook');
-    
-    if (savedProducts) {
-      try {
-        const parsed = JSON.parse(savedProducts);
-        setProducts(parsed.map((p: any) => ({ ...p, credentials: p.credentials || [] })));
-      } catch (e) {
-        setProducts(INITIAL_PRODUCTS.map(p => ({ ...p, credentials: [] })));
-      }
-    } else {
-      setProducts(INITIAL_PRODUCTS.map(p => ({ ...p, credentials: [] })));
-    }
+  // Queries memoizadas para o Firestore
+  const productsQuery = useMemoFirebase(() => collection(db, 'products'), [db]);
+  const ordersQuery = useMemoFirebase(() => collection(db, 'orders'), [db]);
+  const webhookDocRef = useMemoFirebase(() => doc(db, 'settings', 'webhook'), [db]);
 
-    if (savedOrders) {
-      try {
-        setOrders(JSON.parse(savedOrders));
-      } catch (e) {
-        setOrders([]);
-      }
-    }
+  // Hooks de tempo real do Firebase
+  const { data: productsData, isLoading: loadingProducts } = useCollection<StreamingService>(productsQuery);
+  const { data: ordersData, isLoading: loadingOrders } = useCollection<Order>(ordersQuery);
+  const { data: webhookData, isLoading: loadingWebhook } = useDoc<WebhookConfig>(webhookDocRef);
 
-    if (savedWebhook) {
-      try {
-        setWebhookSettings(JSON.parse(savedWebhook));
-      } catch (e) {
-        setWebhookSettings(DEFAULT_WEBHOOK);
-      }
-    }
-    
-    setIsInitialized(true);
-  }, []);
-
-  useEffect(() => {
-    if (isInitialized) {
-      localStorage.setItem('pj_contas_products', JSON.stringify(products));
-      localStorage.setItem('pj_contas_orders', JSON.stringify(orders));
-      localStorage.setItem('pj_contas_webhook', JSON.stringify(webhookSettings));
-    }
-  }, [products, orders, webhookSettings, isInitialized]);
+  const products = useMemo(() => productsData || [], [productsData]);
+  const orders = useMemo(() => ordersData || [], [ordersData]);
+  const webhookSettings = useMemo(() => webhookData || DEFAULT_WEBHOOK, [webhookData]);
+  const isLoading = loadingProducts || loadingOrders || loadingWebhook;
 
   const addProduct = (product: StreamingService) => {
-    setProducts((prev) => [{ ...product, credentials: [] }, ...prev]);
+    const productRef = doc(db, 'products', product.id);
+    setDocumentNonBlocking(productRef, { ...product, credentials: [] }, { merge: true });
   };
 
   const deleteProduct = (id: string) => {
-    setProducts((prev) => prev.filter((p) => p.id !== id));
+    const productRef = doc(db, 'products', id);
+    deleteDocumentNonBlocking(productRef);
   };
 
   const updateProduct = (updated: StreamingService) => {
-    setProducts((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+    const productRef = doc(db, 'products', updated.id);
+    updateDocumentNonBlocking(productRef, updated);
   };
 
   const updateProductsOrder = (reordered: StreamingService[]) => {
-    setProducts(reordered);
+    // Para simplificar no protótipo, atualizamos cada um
+    reordered.forEach((p, index) => {
+      const productRef = doc(db, 'products', p.id);
+      updateDocumentNonBlocking(productRef, { ...p, sortOrder: index });
+    });
   };
 
   const addCredential = (productId: string, credentialData: Omit<AccountCredential, 'id' | 'addedAt' | 'sold'>) => {
-    setProducts((prev) => prev.map((product) => {
-      if (product.id === productId) {
-        const newCredential: AccountCredential = {
-          ...credentialData,
-          id: Math.random().toString(36).substr(2, 9),
-          addedAt: new Date().toISOString(),
-          sold: false
-        };
-        const updatedCredentials = [...(product.credentials || []), newCredential];
-        return {
-          ...product,
-          credentials: updatedCredentials,
-          stock: updatedCredentials.filter(c => !c.sold).length
-        };
-      }
-      return product;
-    }));
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+
+    const newCredential: AccountCredential = {
+      ...credentialData,
+      id: Math.random().toString(36).substr(2, 9),
+      addedAt: new Date().toISOString(),
+      sold: false
+    };
+
+    const updatedCredentials = [...(product.credentials || []), newCredential];
+    const productRef = doc(db, 'products', productId);
+    
+    updateDocumentNonBlocking(productRef, {
+      credentials: updatedCredentials,
+      stock: updatedCredentials.filter(c => !c.sold).length
+    });
   };
 
   const removeCredential = (productId: string, credentialId: string) => {
-    setProducts((prev) => prev.map((product) => {
-      if (product.id === productId) {
-        const updatedCredentials = (product.credentials || []).filter(c => c.id !== credentialId);
-        return {
-          ...product,
-          credentials: updatedCredentials,
-          stock: updatedCredentials.filter(c => !c.sold).length
-        };
-      }
-      return product;
-    }));
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+
+    const updatedCredentials = (product.credentials || []).filter(c => c.id !== credentialId);
+    const productRef = doc(db, 'products', productId);
+
+    updateDocumentNonBlocking(productRef, {
+      credentials: updatedCredentials,
+      stock: updatedCredentials.filter(c => !c.sold).length
+    });
   };
 
   const sellCredential = (productId: string): AccountCredential | null => {
-    let soldItem: AccountCredential | null = null;
-    
-    setProducts((prev) => {
-      const newProducts = prev.map((product) => {
-        if (product.id === productId) {
-          const credentialIndex = (product.credentials || []).findIndex(c => !c.sold);
-          
-          if (credentialIndex !== -1) {
-            const updatedCredentials = [...(product.credentials || [])];
-            updatedCredentials[credentialIndex] = {
-              ...updatedCredentials[credentialIndex],
-              sold: true
-            };
-            soldItem = updatedCredentials[credentialIndex];
-            
-            return {
-              ...product,
-              credentials: updatedCredentials,
-              stock: updatedCredentials.filter(c => !c.sold).length
-            };
-          }
-        }
-        return product;
-      });
-      return newProducts;
+    const product = products.find(p => p.id === productId);
+    if (!product) return null;
+
+    const credentialIndex = (product.credentials || []).findIndex(c => !c.sold);
+    if (credentialIndex === -1) return null;
+
+    const updatedCredentials = [...(product.credentials || [])];
+    const soldItem = { ...updatedCredentials[credentialIndex], sold: true };
+    updatedCredentials[credentialIndex] = soldItem;
+
+    const productRef = doc(db, 'products', productId);
+    updateDocumentNonBlocking(productRef, {
+      credentials: updatedCredentials,
+      stock: updatedCredentials.filter(c => !c.sold).length
     });
-    
+
     return soldItem;
   };
 
   const addOrder = (order: Order) => {
-    setOrders((prev) => [order, ...prev]);
+    const orderRef = doc(db, 'orders', order.id);
+    setDocumentNonBlocking(orderRef, order, { merge: true });
 
     // Dispara o Webhook se estiver ativo
     if (webhookSettings.enabled && webhookSettings.url) {
-      // Função assíncrona para enviar os itens um por um com atraso
       const sendWebhooksSequentially = async () => {
         for (let i = 0; i < order.items.length; i++) {
           const item = order.items[i];
@@ -185,12 +159,9 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
             senhaPerfil: item.screenPass || 'Sem senha'
           };
 
-          // Dispara a requisição
           await sendWebhookAction(webhookSettings.url, payload);
 
-          // Se houver mais de um item e não for o último, aguarda 10 segundos
           if (i < order.items.length - 1) {
-            console.log(`[Webhook] Aguardando 10 segundos antes de enviar o próximo item (${i + 2}/${order.items.length})...`);
             await new Promise(resolve => setTimeout(resolve, 10000));
           }
         }
@@ -201,14 +172,16 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateWebhookSettings = (settings: WebhookConfig) => {
-    setWebhookSettings(settings);
+    const webhookRef = doc(db, 'settings', 'webhook');
+    setDocumentNonBlocking(webhookRef, settings, { merge: true });
   };
 
   return (
     <ProductsContext.Provider value={{ 
-      products, 
+      products: products.sort((a: any, b: any) => (a.sortOrder || 0) - (b.sortOrder || 0)), 
       orders,
       webhookSettings,
+      isLoading,
       addProduct, 
       deleteProduct, 
       updateProduct, 

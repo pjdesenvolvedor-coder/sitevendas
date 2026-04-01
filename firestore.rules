@@ -1,117 +1,16 @@
 rules_version = '2';
 
 /**
- * Streaming Service Storefront - Security Rules
+ * PJ CONTAS - Regras de Desenvolvimento
  * 
- * Core Philosophy:
- * This ruleset implements a dual-access security model: Administrative control for inventory and 
- * public/anonymous access for the shopping experience. It relies on the presence of an 
- * administrator role document in the `/roles_admin` collection to grant elevated privileges.
- * 
- * Data Structure:
- * - /products: Publicly accessible catalog of streaming services.
- * - /products/{id}/stockItems: Secure subcollection containing sensitive credentials (admin only).
- * - /orders: Transaction records, accessible by the ordering guest or administrators.
- * - /roles_admin: A registry of administrative UIDs.
- * 
- * Key Security Decisions:
- * - Public Read Access: Product catalogs are open to all users to allow browsing without authentication.
- * - Denormalized Ownership: Orders and OrderItems explicitly store `customerAuthId` to allow 
- *   performant, single-document authorization checks without traversing the tree.
- * - Restricted Stock Access: Credentials (StockItems) are strictly protected and only 
- *   accessible to verified administrators.
- * - Flexible Schema: While authorization is strictly enforced based on UIDs, data shapes 
- *   are not validated to facilitate rapid prototyping and iteration.
+ * ATENÇÃO: Estas regras estão configuradas como ABERTAS conforme solicitação do usuário.
+ * Qualquer pessoa com o ID do projeto pode ler e escrever no banco de dados.
  */
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // --- Helper Functions ---
-
-    /** Checks if the user is authenticated. */
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    /** Checks if the authenticated user has an administrator role document. */
-    function isAdmin() {
-      return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
-    }
-
-    /** Checks if the authenticated user is the owner of the document based on a specific field. */
-    function isDocumentOwner(ownerField) {
-      return isSignedIn() && resource != null && resource.data[ownerField] == request.auth.uid;
-    }
-
-    /** Checks if the incoming data sets the authenticated user as the owner. */
-    function isIncomingOwner(ownerField) {
-      return isSignedIn() && request.resource.data[ownerField] == request.auth.uid;
-    }
-
-    // --- Collection Rules ---
-
-    /**
-     * @description Catalog of streaming products. Publicly viewable, admin managed.
-     * @path /products/{productId}
-     * @allow (get, list) Always permitted for storefront browsing.
-     * @deny (create, update, delete) Denied for non-admin users.
-     * @principle Public Read with Owner-Only (Admin) Writes.
-     */
-    match /products/{productId} {
-      allow get, list: if true;
-      allow create, update, delete: if isAdmin();
-
-      /**
-       * @description Sensitive account credentials (usernames/passwords).
-       * @path /products/{productId}/stockItems/{stockItemId}
-       * @allow (all) Permitted only for verified administrators.
-       * @deny (all) Denied for all guest users and standard customers.
-       * @principle Administrative lockdown for sensitive PII/Credentials.
-       */
-      match /stockItems/{stockItemId} {
-        allow get, list, create, update, delete: if isAdmin();
-      }
-    }
-
-    /**
-     * @description Customer purchase transactions.
-     * @path /orders/{orderId}
-     * @allow (create) Permitted if the user sets themselves as the customerAuthId.
-     * @allow (get, list) Permitted for the order creator or administrators.
-     * @deny (update, delete) Denied for customers to ensure transaction integrity.
-     * @principle Denormalized ownership for secure guest-checkout access.
-     */
-    match /orders/{orderId} {
-      allow get, list: if isAdmin() || isDocumentOwner('customerAuthId');
-      allow create: if isAdmin() || (isSignedIn() && isIncomingOwner('customerAuthId'));
-      allow update, delete: if isAdmin();
-
-      /**
-       * @description Individual line items within an order.
-       * @path /orders/{orderId}/orderItems/{orderItemId}
-       * @allow (create) Permitted if the user sets themselves as the customerAuthId.
-       * @allow (get, list) Permitted for the order creator or administrators.
-       * @principle Relational integrity maintained via denormalized ownership.
-       */
-      match /orderItems/{orderItemId} {
-        allow get, list: if isAdmin() || isDocumentOwner('customerAuthId');
-        allow create: if isAdmin() || (isSignedIn() && isIncomingOwner('customerAuthId'));
-        allow update, delete: if isAdmin();
-      }
-    }
-
-    /**
-     * @description Registry of administrator UIDs.
-     * @path /roles_admin/{adminUid}
-     * @allow (get) Any signed-in user can check existence to verify roles.
-     * @deny (list, write) Prevent discovery of all admins or self-promotion.
-     * @principle Database Access Control (DBAC) using a dedicated roles collection.
-     */
-    match /roles_admin/{adminUid} {
-      allow get: if isSignedIn();
-      allow list: if isAdmin();
-      allow create, update, delete: if false; // Admin roles managed via Firebase Console or Admin SDK.
+    match /{document=**} {
+      allow read, write: if true;
     }
   }
 }
