@@ -51,6 +51,9 @@ export default function AdminProductsPage() {
   const [productToDelete, setProductToDelete] = useState<StreamingService | null>(null);
   const { toast } = useToast();
 
+  // Filtra apenas produtos de Varejo
+  const retailProducts = products.filter(p => !p.isRevenda);
+
   const [newFeature, setNewFeature] = useState("");
   const [formData, setFormData] = useState({
     name: "",
@@ -123,7 +126,7 @@ export default function AdminProductsPage() {
 
   const onDragEndProducts = (result: DropResult) => {
     if (!result.destination) return;
-    const items = Array.from(products);
+    const items = Array.from(retailProducts);
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
     updateProductsOrder(items);
@@ -276,7 +279,7 @@ export default function AdminProductsPage() {
         <Droppable droppableId="products">
           {(provided) => (
             <div {...provided.droppableProps} ref={provided.innerRef} className="grid grid-cols-1 gap-4">
-              {products.map((product, idx) => (
+              {retailProducts.map((product, idx) => (
                 <Draggable key={product.id} draggableId={product.id} index={idx}>
                   {(provided, snap) => (
                     <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} className={cn("rounded-2xl transition-all", snap.isDragging && "z-50 scale-[1.02]")}>

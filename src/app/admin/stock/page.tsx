@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -20,7 +19,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import Image from "next/image";
+import Image from "image";
 import {
   Dialog,
   DialogContent,
@@ -43,6 +42,9 @@ export default function AdminStockPage() {
   const { products, addCredential, removeCredential } = useProducts();
   const { toast } = useToast();
   
+  // Filtra apenas produtos de Varejo
+  const retailProducts = products.filter(p => !p.isRevenda);
+
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     email: "",
@@ -74,8 +76,8 @@ export default function AdminStockPage() {
     setSelectedProductId(null);
   };
 
-  const totalInventory = products.reduce((acc, p) => acc + (p.credentials?.filter(c => !c.sold).length || 0), 0);
-  const lowStockCount = products.filter(p => (p.credentials?.filter(c => !c.sold).length || 0) < 2).length;
+  const totalInventory = retailProducts.reduce((acc, p) => acc + (p.credentials?.filter(c => !c.sold).length || 0), 0);
+  const lowStockCount = retailProducts.filter(p => (p.credentials?.filter(c => !c.sold).length || 0) < 2).length;
 
   return (
     <div className="space-y-8">
@@ -109,7 +111,7 @@ export default function AdminStockPage() {
       </div>
 
       <div className="space-y-6">
-        {products.map((product) => {
+        {retailProducts.map((product) => {
           const unsoldCredentials = product.credentials?.filter(c => !c.sold) || [];
           return (
             <Card key={product.id} className="bg-card/50 border-border overflow-hidden">
@@ -118,7 +120,7 @@ export default function AdminStockPage() {
                   <div className="flex items-center gap-4">
                     <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-primary/10 shrink-0">
                       {product.imageUrl ? (
-                        <Image src={product.imageUrl} alt={product.name} fill className="object-cover" />
+                        <img src={product.imageUrl} alt={product.name} className="absolute inset-0 w-full h-full object-cover" />
                       ) : (
                         <Tv className="w-5 h-5 text-primary absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" />
                       )}
