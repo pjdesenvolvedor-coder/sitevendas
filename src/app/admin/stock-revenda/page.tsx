@@ -14,8 +14,6 @@ import {
   Trash2, 
   Tv,
   Mail,
-  Monitor,
-  Key,
   Lock
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -49,16 +47,14 @@ export default function AdminStockRevendaPage() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-    screenName: "",
-    screenPassword: ""
   });
 
   const handleAddAccount = () => {
     if (!selectedProductId) return;
-    if (!formData.email || !formData.password || !formData.screenName) {
+    if (!formData.email || !formData.password) {
       toast({ 
         title: "Campos Incompletos", 
-        description: "Email, Senha da Conta e Tela são obrigatórios.", 
+        description: "Email e Senha da Conta são obrigatórios.", 
         variant: "destructive" 
       });
       return;
@@ -67,12 +63,11 @@ export default function AdminStockRevendaPage() {
     addCredential(selectedProductId, {
       email: formData.email,
       password: formData.password,
-      screenName: formData.screenName,
-      screenPassword: formData.screenPassword || undefined
+      screenName: "Conta Completa", // Valor padrão para revenda (conta inteira)
     });
 
     toast({ title: "Conta Adicionada", description: "O estoque de revenda foi atualizado." });
-    setFormData({ email: "", password: "", screenName: "", screenPassword: "" });
+    setFormData({ email: "", password: "" });
     setSelectedProductId(null);
   };
 
@@ -173,31 +168,6 @@ export default function AdminStockRevendaPage() {
                             />
                           </div>
                         </div>
-                        <div className="space-y-2">
-                          <Label className="text-[10px] font-bold uppercase text-muted-foreground">Info Adicional / Tela</Label>
-                          <div className="relative">
-                            <Monitor className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                            <Input 
-                              placeholder="Ex: TELA 01 ou PACK 01"
-                              className="bg-background border-border h-12 pl-12 rounded-xl"
-                              value={formData.screenName}
-                              onChange={(e) => setFormData({...formData, screenName: e.target.value})}
-                            />
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <Label className="text-[10px] font-bold uppercase text-muted-foreground">Pin / Senha Adicional (Opcional)</Label>
-                          <div className="relative">
-                            <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                            <Input 
-                              type="password"
-                              placeholder="Deixe em branco se não houver"
-                              className="bg-background border-border h-12 pl-12 rounded-xl"
-                              value={formData.screenPassword}
-                              onChange={(e) => setFormData({...formData, screenPassword: e.target.value})}
-                            />
-                          </div>
-                        </div>
                       </div>
                       <DialogFooter>
                         <Button variant="outline" className="rounded-xl flex-1 h-12" onClick={() => setSelectedProductId(null)}>CANCELAR</Button>
@@ -215,7 +185,6 @@ export default function AdminStockRevendaPage() {
                       <TableHeader className="bg-muted/50">
                         <TableRow className="border-border">
                           <TableHead className="text-[10px] font-bold uppercase">Acesso</TableHead>
-                          <TableHead className="text-[10px] font-bold uppercase">Detalhes</TableHead>
                           <TableHead className="text-[10px] font-bold uppercase text-right">Ação</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -226,12 +195,6 @@ export default function AdminStockRevendaPage() {
                               <div className="flex flex-col">
                                 <span>{cred.email}</span>
                                 <span className="text-muted-foreground text-[10px] font-mono">Senha: ••••••••</span>
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-xs">
-                              <div className="flex flex-col">
-                                <span>{cred.screenName}</span>
-                                {cred.screenPassword && <span className="text-muted-foreground text-[10px]">PIN: {cred.screenPassword}</span>}
                               </div>
                             </TableCell>
                             <TableCell className="text-right">
