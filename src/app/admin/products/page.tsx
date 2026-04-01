@@ -141,7 +141,6 @@ export default function AdminProductsPage() {
       id: Math.random().toString(36).substr(2, 9),
       name: formData.name,
       price: parseFloat(formData.price),
-      originalPrice: formData.isPromotion && formData.originalPrice ? parseFloat(formData.originalPrice) : undefined,
       description: "",
       stock: 0,
       features: formData.features.length > 0 ? formData.features : ["Acesso imediato", "Suporte 24h"],
@@ -149,6 +148,10 @@ export default function AdminProductsPage() {
       active: true,
       isPromotion: formData.isPromotion,
     };
+
+    if (formData.isPromotion && formData.originalPrice) {
+      newProduct.originalPrice = parseFloat(formData.originalPrice);
+    }
 
     addProduct(newProduct);
     toast({ title: "Produto Salvo", description: `${formData.name} foi adicionado.` });
@@ -163,17 +166,24 @@ export default function AdminProductsPage() {
       return;
     }
 
-    updateProduct({
+    const updatedProduct: StreamingService = {
       ...editingProduct,
       name: editFormData.name,
       price: parseFloat(editFormData.price),
-      originalPrice: editFormData.isPromotion && editFormData.originalPrice ? parseFloat(editFormData.originalPrice) : undefined,
-      description: editingProduct.description,
       imageUrl: editFormData.imageUrl,
       features: editFormData.features,
       active: editFormData.active,
       isPromotion: editFormData.isPromotion
-    });
+    };
+
+    if (editFormData.isPromotion && editFormData.originalPrice) {
+      updatedProduct.originalPrice = parseFloat(editFormData.originalPrice);
+    } else {
+      // Use null instead of undefined for Firestore compatibility
+      updatedProduct.originalPrice = undefined;
+    }
+
+    updateProduct(updatedProduct);
 
     toast({ title: "Produto Atualizado", description: "Alterações salvas com sucesso." });
     setEditingProduct(null);
