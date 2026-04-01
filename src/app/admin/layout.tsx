@@ -12,7 +12,8 @@ import {
   LogOut, 
   Menu,
   Loader2,
-  Boxes
+  Boxes,
+  Briefcase
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,8 @@ const NAV_ITEMS = [
   { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { label: 'Produtos', href: '/admin/products', icon: Package },
   { label: 'Estoque', href: '/admin/stock', icon: Boxes },
+  { label: 'Produtos (Revenda)', href: '/admin/products-revenda', icon: Briefcase },
+  { label: 'Estoque (Revenda)', href: '/admin/stock-revenda', icon: Boxes },
   { label: 'Pedidos', href: '/admin/orders', icon: ShoppingBag },
   { label: 'Configurações', href: '/admin/settings', icon: Settings },
 ];
@@ -70,7 +73,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </span>
       </div>
       
-      <nav className="flex-1 p-6 space-y-3 mt-4">
+      <nav className="flex-1 p-6 space-y-2 mt-4 overflow-y-auto no-scrollbar">
         {NAV_ITEMS.map((item) => {
           const isActive = pathname === item.href;
           return (
@@ -78,14 +81,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Button 
                 variant={isActive ? "default" : "ghost"} 
                 className={cn(
-                  "w-full justify-start gap-4 py-8 rounded-2xl transition-all",
+                  "w-full justify-start gap-4 py-6 rounded-2xl transition-all",
                   isActive 
                     ? "bg-primary text-white shadow-lg shadow-primary/20" 
                     : "text-muted-foreground hover:text-primary hover:bg-primary/5"
                 )}
               >
-                <item.icon className="w-6 h-6" />
-                <span className="font-bold uppercase tracking-widest text-xs">{item.label}</span>
+                <item.icon className="w-5 h-5" />
+                <span className="font-bold uppercase tracking-widest text-[10px]">{item.label}</span>
               </Button>
             </Link>
           );
@@ -95,11 +98,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <div className="p-6 border-t border-white/5">
         <Button 
           variant="ghost" 
-          className="w-full justify-start gap-4 py-8 rounded-2xl text-muted-foreground hover:text-red-500 hover:bg-red-500/5"
+          className="w-full justify-start gap-4 py-6 rounded-2xl text-muted-foreground hover:text-red-500 hover:bg-red-500/5"
           onClick={handleLogout}
         >
-          <LogOut className="w-6 h-6" />
-          <span className="font-bold uppercase tracking-widest text-xs">Sair do Painel</span>
+          <LogOut className="w-5 h-5" />
+          <span className="font-bold uppercase tracking-widest text-[10px]">Sair do Painel</span>
         </Button>
       </div>
     </div>
@@ -108,7 +111,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="flex min-h-screen bg-background text-foreground">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:block w-80 h-screen sticky top-0">
+      <aside className="hidden lg:block w-72 h-screen sticky top-0">
         <SidebarContent />
       </aside>
 

@@ -20,6 +20,8 @@ export type StreamingService = {
   imageUrl: string;
   active: boolean;
   isPromotion: boolean;
+  isRevenda?: boolean;
+  sortOrder?: number;
   credentials?: AccountCredential[];
 };
 

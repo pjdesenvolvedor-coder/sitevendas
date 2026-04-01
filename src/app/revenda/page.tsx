@@ -1,0 +1,230 @@
+
+"use client";
+
+import Image from "next/image";
+import Link from "next/link";
+import { Navbar } from "@/components/navbar";
+import { useProducts } from "@/context/products-context";
+import { PlaceHolderImages } from "@/lib/placeholder-images";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { CheckCircle2, Star, Zap, ShoppingCart, Tv, Play, Ban, Sparkles, ArrowRight, Briefcase } from "lucide-react";
+
+export default function RevendaPage() {
+  const { products } = useProducts();
+  const heroImg = PlaceHolderImages.find(img => img.id === 'hero')?.imageUrl || '';
+  const logoImg = PlaceHolderImages.find(img => img.id === 'logo')?.imageUrl || '';
+
+  // Filtra apenas produtos de revenda
+  const revendaProducts = products.filter(p => p.active && p.isRevenda);
+  
+  // Promoções de revenda
+  const promotionProducts = revendaProducts.filter(p => p.isPromotion);
+  
+  // Produtos regulares de revenda
+  const regularProducts = revendaProducts.filter(p => !p.isPromotion);
+
+  const scrollToProducts = () => {
+    const element = document.getElementById('produtos-revenda');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const categories = ['Netflix Revenda', 'Disney+ Pack', 'HBO Max Business', 'Combo Premium'];
+  const tickerItems = [...categories, ...categories];
+
+  return (
+    <div className="flex flex-col min-h-screen bg-background text-foreground overflow-x-hidden">
+      <Navbar />
+      
+      {/* Hero Section */}
+      <section className="relative pt-24 pb-12 overflow-hidden flex items-center">
+        <div className="absolute inset-0 -z-10 opacity-30">
+          <Image 
+            src={heroImg} 
+            alt="Fundo Hero" 
+            fill 
+            className="object-cover scale-110"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-background via-background/60 to-background"></div>
+        </div>
+        
+        <div className="container mx-auto px-6 text-center">
+          <Badge variant="outline" className="mb-8 border-primary/50 text-primary px-4 py-1.5 text-[10px] uppercase tracking-[0.2em] bg-primary/5">
+            <Briefcase className="w-3 h-3 mr-2 fill-primary" />
+            OPORTUNIDADE PARA REVENDEDORES
+          </Badge>
+          <h1 className="text-5xl sm:text-7xl md:text-8xl font-headline font-bold mb-6 leading-[0.9] tracking-normal">
+            CATÁLOGO DE <br />
+            <span className="text-primary italic">REVENDA.</span>
+          </h1>
+          <p className="text-base sm:text-xl text-muted-foreground mb-8 max-w-lg mx-auto font-body leading-relaxed px-4">
+            Preços exclusivos para atacado. Abasteça seu negócio com a melhor qualidade da <span className="pj-text">PJ</span> <span className="contas-text">CONTAS</span>.
+          </p>
+          <div className="flex flex-col gap-4 px-6 sm:flex-row sm:justify-center">
+            <Button 
+              size="lg" 
+              className="bg-primary hover:bg-primary/90 w-full sm:w-auto h-16 text-xl rounded-2xl font-bold shadow-2xl shadow-primary/30 uppercase tracking-widest"
+              onClick={scrollToProducts}
+            >
+              Ver Tabela Atacado
+            </Button>
+            <Link href="https://wa.link/epce4q" target="_blank" className="w-full sm:w-auto">
+              <Button 
+                size="lg" 
+                className="w-full h-16 text-xl rounded-2xl font-bold bg-[#25D366] hover:bg-[#1EBE57] text-white uppercase tracking-widest gap-3 shadow-lg shadow-green-500/20 border-none"
+              >
+                Falar com Consultor
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Ticker Section */}
+      <section className="py-4 bg-card/20 border-y border-white/5 relative overflow-hidden">
+        <div className="ticker-container pointer-events-none">
+          <div className="animate-marquee flex whitespace-nowrap">
+            {tickerItems.map((cat, i) => (
+              <div key={i} className="ticker-item flex items-center gap-3 relative overflow-hidden group">
+                <Zap className="w-4 h-4 fill-current opacity-50" />
+                {cat}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Revenda Promotions */}
+      {promotionProducts.length > 0 && (
+        <section className="py-16 container mx-auto px-6">
+          <div className="flex items-center gap-4 mb-10">
+            <div className="p-3 bg-primary/10 rounded-2xl">
+              <Sparkles className="w-8 h-8 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-4xl md:text-5xl font-headline font-bold uppercase tracking-normal">Melhores Margens</h2>
+              <p className="text-muted-foreground text-sm uppercase tracking-widest font-bold">Destaques para o seu estoque</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {promotionProducts.map((product) => {
+              const hasStock = product.stock > 0;
+              return (
+                <Card key={product.id} className="group bg-primary/5 border-primary/20 hover:border-primary transition-all duration-500 rounded-[2rem] overflow-hidden relative">
+                  <CardContent className="p-0">
+                    <div className="relative h-48 w-full">
+                      {product.imageUrl && (
+                        <Image src={product.imageUrl} alt={product.name} fill className="object-cover transition-transform group-hover:scale-105" />
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent opacity-60"></div>
+                    </div>
+                    <div className="p-6">
+                      <h3 className="text-2xl font-headline font-bold mb-2 uppercase">{product.name}</h3>
+                      <div className="flex items-baseline gap-2 mb-6">
+                        <span className="text-3xl font-headline font-bold text-white">R$ {product.price.toFixed(2)}</span>
+                        <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">/ UNIDADE</span>
+                      </div>
+                      {hasStock ? (
+                        <Link href={`/checkout/${product.id}`} className="w-full">
+                          <Button className="w-full bg-primary hover:bg-primary/90 font-bold h-12 rounded-xl uppercase tracking-widest gap-2">
+                            Comprar Lote
+                          </Button>
+                        </Link>
+                      ) : (
+                        <Button disabled className="w-full bg-muted text-red-500 font-bold h-12 rounded-xl uppercase tracking-widest gap-2">
+                          Esgotado
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* Main Revenda Grid */}
+      <section id="produtos-revenda" className="py-16 container mx-auto px-6">
+        <div className="mb-12 text-center md:text-left">
+          <h2 className="text-4xl md:text-5xl font-headline font-bold mb-4 uppercase tracking-normal">Tabela de Atacado</h2>
+          <div className="w-20 h-1 bg-primary mb-4 mx-auto md:mx-0"></div>
+          <p className="text-base text-muted-foreground max-w-md">
+            Selecione o pacote ideal para sua revenda e receba os acessos imediatamente.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {regularProducts.length > 0 ? regularProducts.map((product) => {
+            const hasStock = product.stock > 0;
+            return (
+              <Card key={product.id} className="group bg-card/60 border-white/5 hover:border-primary/50 transition-all duration-500 rounded-[2.5rem] overflow-hidden shadow-2xl backdrop-blur-xl">
+                <CardContent className="p-8">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="relative w-16 h-16 rounded-2xl overflow-hidden bg-primary/10 shrink-0">
+                      {product.imageUrl && <Image src={product.imageUrl} alt={product.name} fill className="object-cover" />}
+                    </div>
+                    <div>
+                      <CardTitle className="text-2xl font-headline uppercase tracking-normal">{product.name}</CardTitle>
+                      <Badge variant="outline" className="text-[8px] uppercase tracking-widest text-primary border-primary/30">Revenda</Badge>
+                    </div>
+                  </div>
+                  
+                  <ul className="space-y-3 mb-8">
+                    {product.features.map((feature, i) => (
+                      <li key={i} className="flex items-center text-sm gap-3 text-muted-foreground">
+                        <CheckCircle2 className="w-4 h-4 text-primary" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex flex-col">
+                      <span className="text-4xl font-headline font-bold text-white">R$ {product.price.toFixed(2)}</span>
+                      <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Preço de Lote</span>
+                    </div>
+                    
+                    {hasStock ? (
+                      <Link href={`/checkout/${product.id}`}>
+                        <Button className="bg-primary hover:bg-primary/90 h-14 px-8 text-sm rounded-xl font-bold uppercase tracking-widest">
+                          Adquirir
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Button disabled className="bg-muted/50 text-red-500 h-14 px-8 text-sm rounded-xl font-bold uppercase tracking-widest">
+                        Aguardando Reposição
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          }) : (
+            <div className="col-span-full py-20 text-center bg-card/20 rounded-[3rem] border border-dashed border-white/5">
+              <p className="text-muted-foreground font-bold uppercase tracking-[0.2em]">O catálogo de revenda está sendo atualizado...</p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <footer className="py-16 bg-black/40 border-t border-white/5 px-6 mt-auto">
+        <div className="container mx-auto flex flex-col items-center text-center gap-6">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl font-headline font-bold tracking-normal">
+              <span className="pj-text">PJ</span> <span className="contas-text">CONTAS</span> <span className="text-primary italic">REVENDA</span>
+            </span>
+          </div>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-[0.1em] max-w-xs leading-loose">
+            ÁREA EXCLUSIVA PARA PARCEIROS E REVENDEDORES. TODOS OS DIREITOS RESERVADOS.
+          </p>
+        </div>
+      </footer>
+    </div>
+  );
+}
