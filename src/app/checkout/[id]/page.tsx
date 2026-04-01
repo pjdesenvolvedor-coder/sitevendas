@@ -177,6 +177,9 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
     !selectedProducts.find(sp => sp.id === p.id)
   );
 
+  // Verifica se o pedido atual é de revenda para redirecionar o botão de volta corretamente
+  const isRevendaOrder = purchasedCredentials.some(cred => cred.isRevenda);
+
   return (
     <div className="min-h-screen pt-32 pb-12 bg-background">
       <Navbar />
@@ -487,7 +490,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
                   </p>
                 </div>
 
-                <Link href="/" className="block mt-8">
+                <Link href={isRevendaOrder ? "/revenda" : "/"} className="block mt-8">
                   <Button className="bg-white text-black hover:bg-white/90 font-bold h-14 w-full rounded-xl uppercase tracking-widest">
                     Voltar ao Início
                   </Button>
