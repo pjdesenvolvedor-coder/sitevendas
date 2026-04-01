@@ -135,9 +135,9 @@ export default function RevendaPage() {
                         <h3 className="text-2xl font-headline font-bold uppercase">{product.name}</h3>
                         <VerifiedBadge />
                       </div>
-                      <div className="flex items-baseline gap-2 mb-6">
-                        <span className="text-3xl font-headline font-bold text-white">R$ {product.price.toFixed(2)}</span>
-                        <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">/ UNIDADE</span>
+                      <div className="flex flex-col mb-6">
+                        <span className="text-4xl font-headline font-bold text-white">R$ {product.price.toFixed(2)}</span>
+                        <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-[0.2em]">PREÇO DA CONTA</span>
                       </div>
                       {hasStock ? (
                         <Link href={`/checkout/${product.id}`} className="w-full">
@@ -200,7 +200,7 @@ export default function RevendaPage() {
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex flex-col">
                       <span className="text-4xl font-headline font-bold text-white">R$ {product.price.toFixed(2)}</span>
-                      <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Preço da conta</span>
+                      <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-[0.2em]">PREÇO DA CONTA</span>
                     </div>
                     
                     {hasStock ? (
