@@ -35,6 +35,13 @@ export default function RevendaPage() {
   const categories = ['Netflix Revenda', 'Disney+ Pack', 'HBO Max Business', 'Combo Premium'];
   const tickerItems = [...categories, ...categories];
 
+  // Componente de Selo Verificado Animado
+  const VerifiedBadge = () => (
+    <svg viewBox="0 0 24 24" className="w-5 h-5 fill-blue-500 animate-pulse shrink-0" xmlns="http://www.w3.org/2000/svg">
+      <path d="M23,12L20.56,9.22L20.9,5.54L17.29,4.72L15.4,1.54L12,3L8.6,1.54L6.71,4.72L3.1,5.53L3.44,9.21L1,12L3.44,14.78L3.1,18.47L6.71,19.29L8.6,22.47L12,21L15.4,22.46L17.29,19.28L20.9,18.46L20.56,14.78L23,12M10,17L6,13L7.41,11.59L10,14.17L16.59,7.58L18,9L10,17Z" />
+    </svg>
+  );
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground overflow-x-hidden">
       <Navbar />
@@ -124,7 +131,10 @@ export default function RevendaPage() {
                       <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent opacity-60"></div>
                     </div>
                     <div className="p-6">
-                      <h3 className="text-2xl font-headline font-bold mb-2 uppercase">{product.name}</h3>
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3 className="text-2xl font-headline font-bold uppercase">{product.name}</h3>
+                        <VerifiedBadge />
+                      </div>
                       <div className="flex items-baseline gap-2 mb-6">
                         <span className="text-3xl font-headline font-bold text-white">R$ {product.price.toFixed(2)}</span>
                         <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">/ UNIDADE</span>
@@ -170,7 +180,10 @@ export default function RevendaPage() {
                       {product.imageUrl && <Image src={product.imageUrl} alt={product.name} fill className="object-cover" />}
                     </div>
                     <div>
-                      <CardTitle className="text-2xl font-headline uppercase tracking-normal">{product.name}</CardTitle>
+                      <div className="flex items-center gap-2">
+                        <CardTitle className="text-2xl font-headline uppercase tracking-normal">{product.name}</CardTitle>
+                        <VerifiedBadge />
+                      </div>
                       <Badge variant="outline" className="text-[8px] uppercase tracking-widest text-primary border-primary/30">Revenda</Badge>
                     </div>
                   </div>
