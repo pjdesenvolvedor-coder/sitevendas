@@ -130,9 +130,9 @@ export default function RevendaPage() {
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent opacity-60"></div>
                       <div className="absolute top-4 right-4 z-10">
-                        <Badge className="bg-black/60 text-white border-white/10 backdrop-blur-md px-3 py-1 text-[10px] font-bold gap-2">
+                        <Badge className="bg-black/80 text-primary border border-primary/20 backdrop-blur-md px-3 py-1.5 text-[10px] font-bold gap-2">
                           <Boxes className="w-3 h-3 text-primary" />
-                          {product.stock} DISPONÍVEIS
+                          {product.stock} EM ESTOQUE
                         </Badge>
                       </div>
                     </div>
@@ -181,7 +181,14 @@ export default function RevendaPage() {
             return (
               <Card key={product.id} className="group bg-card/60 border-white/5 hover:border-primary/50 transition-all duration-500 rounded-[2.5rem] overflow-hidden shadow-2xl backdrop-blur-xl">
                 <CardContent className="p-8">
-                  <div className="flex items-center justify-between mb-6">
+                  <div className="flex flex-col gap-4 mb-6">
+                    <div className="flex justify-end">
+                      <Badge variant="secondary" className="bg-black/60 text-primary border border-primary/20 backdrop-blur-md px-3 py-1.5 text-[10px] font-bold gap-2">
+                        <Boxes className="w-3 h-3 text-primary" />
+                        {product.stock} EM ESTOQUE
+                      </Badge>
+                    </div>
+                    
                     <div className="flex items-center gap-4">
                       <div className="relative w-16 h-16 rounded-2xl overflow-hidden bg-primary/10 shrink-0">
                         {product.imageUrl && <Image src={product.imageUrl} alt={product.name} fill className="object-cover" />}
@@ -191,13 +198,11 @@ export default function RevendaPage() {
                           <CardTitle className="text-2xl font-headline uppercase tracking-normal">{product.name}</CardTitle>
                           <VerifiedBadge />
                         </div>
-                        <Badge variant="outline" className="text-[8px] uppercase tracking-widest text-primary border-primary/30">Revenda</Badge>
+                        <div className="flex mt-1">
+                          <Badge variant="outline" className="text-[8px] uppercase tracking-widest text-primary border-primary/30 h-5 px-2">Revenda</Badge>
+                        </div>
                       </div>
                     </div>
-                    <Badge variant="secondary" className="bg-primary/10 text-primary border-none font-bold py-1 px-3 text-[10px] uppercase gap-2">
-                      <Boxes className="w-3 h-3" />
-                      {product.stock} EM ESTOQUE
-                    </Badge>
                   </div>
                   
                   <ul className="space-y-3 mb-8">
@@ -211,19 +216,19 @@ export default function RevendaPage() {
 
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex flex-col">
-                      <span className="text-4xl font-headline font-bold text-white">R$ {product.price.toFixed(2)}</span>
-                      <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-[0.2em]">PREÇO DA CONTA</span>
+                      <span className="text-4xl font-headline font-bold text-white leading-none">R$ {product.price.toFixed(2)}</span>
+                      <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-[0.2em] mt-2">PREÇO DA CONTA</span>
                     </div>
                     
                     {hasStock ? (
                       <Link href={`/checkout/${product.id}`}>
-                        <Button className="bg-primary hover:bg-primary/90 h-11 px-6 text-xs rounded-xl font-bold uppercase tracking-widest">
+                        <Button className="bg-primary hover:bg-primary/90 h-11 px-8 text-xs rounded-xl font-bold uppercase tracking-widest shadow-lg shadow-primary/20">
                           Adquirir
                         </Button>
                       </Link>
                     ) : (
                       <Button disabled className="bg-muted/50 text-red-500 h-11 px-6 text-xs rounded-xl font-bold uppercase tracking-widest">
-                        Aguardando Reposição
+                        Reposição em breve
                       </Button>
                     )}
                   </div>
