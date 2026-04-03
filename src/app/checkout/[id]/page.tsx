@@ -1,6 +1,7 @@
+
 "use client";
 
-import { use, useState, useEffect } from "react";
+import { use, useState, useEffect, useRef } from "react";
 import { useProducts } from "@/context/products-context";
 import { Navbar } from "@/components/navbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -49,6 +50,8 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'pending' | 'paid'>('idle');
   const [copied, setCopied] = useState(false);
   
+  const saleProcessedRef = useRef(false);
+
   const [formData, setFormData] = useState({
     fullName: "",
     phone: ""
@@ -59,10 +62,14 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
-    if (paymentStatus === 'pending' && pixData?.id) {
+    if (paymentStatus === 'pending' && pixData?.id && !saleProcessedRef.current) {
       interval = setInterval(async () => {
         const result = await checkPixStatusAction(pixData.id);
-        if (result.status === 'paid') {
+        
+        if (result.status === 'paid' && !saleProcessedRef.current) {
+          saleProcessedRef.current = true;
+          clearInterval(interval);
+
           const credentials: DeliveredCredential[] = selectedProducts.map(p => {
             const sold = sellCredential(p.id);
             return {
@@ -88,7 +95,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
           addOrder(newOrder);
           setPurchasedCredentials(credentials);
           setPaymentStatus('paid');
-          clearInterval(interval);
+          
           toast({
             title: "Pagamento Confirmado!",
             description: "Seu acesso está liberado na tela.",
@@ -100,7 +107,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [paymentStatus, pixData?.id, toast, selectedProducts, sellCredential, addOrder, formData]);
+  }, [paymentStatus, pixData?.id, selectedProducts, sellCredential, addOrder, formData, toast]);
 
   useEffect(() => {
     const initialProduct = products.find(p => p.id === resolvedParams.id);
@@ -117,6 +124,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
     setSelectedProducts([...selectedProducts, product]);
     setPixData(null);
     setPaymentStatus('idle');
+    saleProcessedRef.current = false;
     toast({ title: "Produto Adicionado", description: `${product.name} foi incluído no pedido.` });
   };
 
@@ -128,6 +136,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
     setSelectedProducts(selectedProducts.filter(p => p.id !== id));
     setPixData(null);
     setPaymentStatus('idle');
+    saleProcessedRef.current = false;
   };
 
   const totalValue = selectedProducts.reduce((acc, p) => acc + p.price, 0);
@@ -148,6 +157,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
       const pix = await createPixAction(totalValue);
       setPixData(pix);
       setPaymentStatus('pending');
+      saleProcessedRef.current = false;
       toast({ 
         title: "PIX Gerado!", 
         description: "Efetue o pagamento para liberar seu acesso.",

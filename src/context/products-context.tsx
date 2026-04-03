@@ -1,6 +1,7 @@
+
 "use client";
 
-import React, { createContext, useContext, useMemo } from 'react';
+import React, { createContext, useContext, useMemo, useCallback } from 'react';
 import { StreamingService, AccountCredential, Order, WebhookConfig } from '@/lib/types';
 import { sendWebhookAction } from '@/lib/webhook-actions';
 import { 
@@ -9,7 +10,6 @@ import {
   useDoc, 
   useMemoFirebase,
   setDocumentNonBlocking,
-  addDocumentNonBlocking,
   updateDocumentNonBlocking,
   deleteDocumentNonBlocking
 } from '@/firebase';
@@ -48,12 +48,10 @@ const ProductsContext = createContext<ProductsContextType | undefined>(undefined
 export function ProductsProvider({ children }: { children: React.ReactNode }) {
   const db = useFirestore();
 
-  // Queries memoizadas para o Firestore
   const productsQuery = useMemoFirebase(() => collection(db, 'products'), [db]);
   const ordersQuery = useMemoFirebase(() => collection(db, 'orders'), [db]);
   const webhookDocRef = useMemoFirebase(() => doc(db, 'settings', 'webhook'), [db]);
 
-  // Hooks de tempo real do Firebase
   const { data: productsData, isLoading: loadingProducts } = useCollection<StreamingService>(productsQuery);
   const { data: ordersData, isLoading: loadingOrders } = useCollection<Order>(ordersQuery);
   const { data: webhookData, isLoading: loadingWebhook } = useDoc<WebhookConfig>(webhookDocRef);
@@ -63,30 +61,29 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
   const webhookSettings = useMemo(() => webhookData || DEFAULT_WEBHOOK, [webhookData]);
   const isLoading = loadingProducts || loadingOrders || loadingWebhook;
 
-  const addProduct = (product: StreamingService) => {
+  const addProduct = useCallback((product: StreamingService) => {
     const productRef = doc(db, 'products', product.id);
-    setDocumentNonBlocking(productRef, { ...product, credentials: [] }, { merge: true });
-  };
+    setDocumentNonBlocking(productRef, { ...product, credentials: product.credentials || [] }, { merge: true });
+  }, [db]);
 
-  const deleteProduct = (id: string) => {
+  const deleteProduct = useCallback((id: string) => {
     const productRef = doc(db, 'products', id);
     deleteDocumentNonBlocking(productRef);
-  };
+  }, [db]);
 
-  const updateProduct = (updated: StreamingService) => {
+  const updateProduct = useCallback((updated: StreamingService) => {
     const productRef = doc(db, 'products', updated.id);
     updateDocumentNonBlocking(productRef, updated);
-  };
+  }, [db]);
 
-  const updateProductsOrder = (reordered: StreamingService[]) => {
-    // Para simplificar no protótipo, atualizamos cada um
+  const updateProductsOrder = useCallback((reordered: StreamingService[]) => {
     reordered.forEach((p, index) => {
       const productRef = doc(db, 'products', p.id);
-      updateDocumentNonBlocking(productRef, { ...p, sortOrder: index });
+      updateDocumentNonBlocking(productRef, { sortOrder: index });
     });
-  };
+  }, [db]);
 
-  const addCredential = (productId: string, credentialData: Omit<AccountCredential, 'id' | 'addedAt' | 'sold'>) => {
+  const addCredential = useCallback((productId: string, credentialData: Omit<AccountCredential, 'id' | 'addedAt' | 'sold'>) => {
     const product = products.find(p => p.id === productId);
     if (!product) return;
 
@@ -104,9 +101,9 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
       credentials: updatedCredentials,
       stock: updatedCredentials.filter(c => !c.sold).length
     });
-  };
+  }, [db, products]);
 
-  const removeCredential = (productId: string, credentialId: string) => {
+  const removeCredential = useCallback((productId: string, credentialId: string) => {
     const product = products.find(p => p.id === productId);
     if (!product) return;
 
@@ -117,38 +114,42 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
       credentials: updatedCredentials,
       stock: updatedCredentials.filter(c => !c.sold).length
     });
-  };
+  }, [db, products]);
 
-  const sellCredential = (productId: string): AccountCredential | null => {
+  const sellCredential = useCallback((productId: string): AccountCredential | null => {
+    // Busca o produto no estado atualizado
     const product = products.find(p => p.id === productId);
-    if (!product) return null;
+    if (!product || !product.credentials) return null;
 
-    const credentialIndex = (product.credentials || []).findIndex(c => !c.sold);
+    // Encontra a primeira disponível
+    const credentialIndex = product.credentials.findIndex(c => !c.sold);
     if (credentialIndex === -1) return null;
 
-    const updatedCredentials = [...(product.credentials || [])];
+    const updatedCredentials = [...product.credentials];
     const soldItem = { ...updatedCredentials[credentialIndex], sold: true };
     updatedCredentials[credentialIndex] = soldItem;
 
     const productRef = doc(db, 'products', productId);
+    
+    // Atualiza o documento no Firestore com o novo status e contador
     updateDocumentNonBlocking(productRef, {
       credentials: updatedCredentials,
       stock: updatedCredentials.filter(c => !c.sold).length
     });
 
     return soldItem;
-  };
+  }, [db, products]);
 
-  const addOrder = (order: Order) => {
+  const addOrder = useCallback((order: Order) => {
     const orderRef = doc(db, 'orders', order.id);
     setDocumentNonBlocking(orderRef, order, { merge: true });
 
-    // Dispara o Webhook se estiver ativo
     if (webhookSettings.enabled && webhookSettings.url) {
       const sendWebhooksSequentially = async () => {
         for (let i = 0; i < order.items.length; i++) {
           const item = order.items[i];
           const payload = {
+            orderId: order.id,
             nome: order.customerName,
             telefone: order.customerPhone,
             produto: item.productName,
@@ -156,25 +157,24 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
             emailConta: item.email,
             senhaConta: item.pass,
             perfil: item.screen,
-            senhaPerfil: item.screenPass || 'Sem senha'
+            senhaPerfil: item.screenPass || 'Sem senha',
+            isRevenda: item.isRevenda || false
           };
 
           await sendWebhookAction(webhookSettings.url, payload);
-
           if (i < order.items.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 10000));
+            await new Promise(resolve => setTimeout(resolve, 5000));
           }
         }
       };
-
       sendWebhooksSequentially();
     }
-  };
+  }, [db, webhookSettings]);
 
-  const updateWebhookSettings = (settings: WebhookConfig) => {
+  const updateWebhookSettings = useCallback((settings: WebhookConfig) => {
     const webhookRef = doc(db, 'settings', 'webhook');
     setDocumentNonBlocking(webhookRef, settings, { merge: true });
-  };
+  }, [db]);
 
   return (
     <ProductsContext.Provider value={{ 
